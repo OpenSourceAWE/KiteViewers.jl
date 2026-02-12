@@ -3,7 +3,7 @@ if ! ("KiteModels" ∈ keys(Pkg.project().dependencies))
     Pkg.activate("examples")
 end
 
-using KiteViewers, KiteModels
+using KiteModels, KiteViewers
 
 # example program that shows
 # a. how to create a video
