@@ -1,11 +1,16 @@
 # Changelog
-### Unreleased
+### KiteViewers v0.5 - 2026-02-12
+#### Changes
+- BREAKING: update KiteUtils to 1.11.2
+- use a workspace "examples" instead of TestEnv -> min Julia version now 1.11
+- update examples
 - bump GLMakie to 0.13
-- move repo to OpenSourceAWE
 - update README.md
 - update CI.yml
 - update script `update_manifest.jl`
+#### Added
 - add Manifest-v1.11.toml.default
+- add Manifest-v1.12.toml.default
 
 ### KiteViewers v0.4.24 - 2025-01-06
 #### Changed
