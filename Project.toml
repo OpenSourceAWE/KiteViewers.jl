@@ -1,7 +1,7 @@
 name = "KiteViewers"
 uuid = "2e593061-95e7-45e4-95f4-df0491f2e601"
 authors = ["Uwe Fechner <fechner@aenarete.eu> and contributors"]
-version = "0.4.24"
+version = "0.5.0"
 
 [workspace]
 projects = ["examples"]
