@@ -1,6 +1,6 @@
 using Pkg, Timers
 if ! ("KiteModels" ∈ keys(Pkg.project().dependencies))
-    using TestEnv; TestEnv.activate()
+    Pkg.activate("examples")
 end
 
 using KiteViewers, KiteModels, KitePodModels, Joysticks
