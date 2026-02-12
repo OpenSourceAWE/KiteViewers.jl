@@ -19,7 +19,7 @@ STEPS = Int64(round(TIME/dt))
 STATISTIC = false
 SHOW_VIEWER = true
 SHOW_KITE = true
-PLOT_PERFORMANCE = true
+const PLOT_PERFORMANCE = true
 # end of user parameter section #
 
 time_vec_gc::Vector{Float64} = zeros(STEPS)
@@ -50,9 +50,8 @@ function simulate(integrator, steps)
         if t_sim < 0.08*dt
             t_gc = @elapsed GC.gc(false)
         end
-        t_show = 0.0
         if mod(i, TIME_LAPSE_RATIO) == 0 || i == steps
-            t_show = @elapsed update_system(viewer, SysState(kps4); scale = 0.08, kite_scale=3.0)
+            update_system(viewer, SysState(kps4); scale = 0.08, kite_scale=3.0)
             end_time_ns = time_ns()
             wait_until(start_time_ns + dt*1e9, always_sleep=true)
             mtime = 0
@@ -64,8 +63,6 @@ function simulate(integrator, steps)
                     j += 1
                 end
                 k +=1
-            else
-                t_show = 0.0
             end
             if mtime > max_time
                 max_time = mtime
@@ -90,7 +87,7 @@ function play()
     GC.enable(true)
 end
 
-on(viewer.btn_PLAY.clicks) do c
+on(viewer.btn_PLAY.clicks) do _
     if viewer.stop
         @async begin
             play()
@@ -98,7 +95,7 @@ on(viewer.btn_PLAY.clicks) do c
         end
     end
 end
-on(viewer.btn_STOP.clicks) do c
+on(viewer.btn_STOP.clicks) do _
    stop(viewer)
 end
 

@@ -23,7 +23,7 @@ STEPS = Int64(round(TIME/dt))
 STATISTIC = false
 SHOW_KITE = false
 SAVE_PNG  = false
-PLOT_PERFORMANCE = false
+const PLOT_PERFORMANCE = false
 # end of user parameter section #
 
 time_vec::Vector{Float64} = zeros(div(STEPS, TIME_LAPSE_RATIO))
@@ -76,6 +76,6 @@ integrator = KiteModels.init!(kps4; delta=0.0, stiffness_factor=0.5, prn=STATIST
 
 av_steps = simulate(integrator, STEPS, log=SAVE_PNG)
 if PLOT_PERFORMANCE
-    using ControlPlots
+    using ControlPlots: plot
     plot(range(0.1,TIME,step=0.1), time_vec; ylabel="CPU time [%]", xlabel="Simulation time [s]")
 end
