@@ -1,7 +1,7 @@
 using Pkg, Timers
 tic()
 if ! ("KiteModels" ∈ keys(Pkg.project().dependencies))
-    using TestEnv; TestEnv.activate()
+    Pkg.activate("examples")
 end
 
 using KiteViewers, KiteModels
@@ -85,7 +85,7 @@ function simulate(integrator, steps)
 end
 
 function play()
-    integrator = KiteModels.init_sim!(kps4; delta=0, stiffness_factor=0.5, prn=STATISTIC)
+    integrator = KiteModels.init!(kps4; delta=0, stiffness_factor=0.5, prn=STATISTIC)
     simulate(integrator, STEPS)
     GC.enable(true)
 end

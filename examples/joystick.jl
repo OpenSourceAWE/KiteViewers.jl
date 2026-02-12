@@ -86,7 +86,7 @@ end
 
 function play()
     global steps
-    integrator = KiteModels.init_sim!(kps4, stiffness_factor=0.5)
+    integrator = KiteModels.init!(kps4, stiffness_factor=0.5)
     steps = simulate(integrator)
     GC.enable(true)
 end

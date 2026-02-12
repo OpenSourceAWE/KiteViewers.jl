@@ -1,15 +1,18 @@
-name = "KiteViewers"
-uuid = "2e593061-95e7-45e4-95f4-df0491f2e601"
-authors = ["Uwe Fechner <fechner@aenarete.eu> and contributors"]
-version = "0.4.24"
-
 [deps]
+ControlPlots = "23c2ee80-7a9e-4350-b264-8e670f12517c"
 FileIO = "5789e2e9-d7fb-5bc7-8068-2c6fae9b9549"
+ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
 GLMakie = "e9467ef8-e4e7-5192-8a1a-b1aee30e663a"
 GeometryBasics = "5c1252a2-5f33-56bf-86c9-59e7332b4326"
+HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
+JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 Joysticks = "82f05805-4863-42dc-b1a7-0852bd62c632"
+KiteModels = "b94af626-7959-4878-9336-2adc27959007"
+KitePodModels = "9de5dc81-f971-414a-927b-652b2f41c539"
 KiteUtils = "90980105-b163-44e5-ba9f-8b1c83bb0533"
+KiteViewers = "2e593061-95e7-45e4-95f4-df0491f2e601"
 LinearAlgebra = "37e2e46d-f89d-539d-b4ee-838fcccc9c8e"
+PackageCompiler = "9b87118b-4619-50d2-8e1e-99f35a4d4d9d"
 Parameters = "d96e819e-fc66-5662-9728-84c9c7592b0a"
 Pkg = "44cfe95a-1eb2-52ea-b672-e2afdf69b78f"
 PrecompileTools = "aea7be01-6a6a-4083-8856-8a6e6704d82a"
@@ -18,7 +21,11 @@ Reexport = "189a3867-3050-52da-a836-e630ba90ab69"
 Rotations = "6038ab10-8711-5258-84ad-4b1120ba62dc"
 StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 StructArrays = "09ab397b-f2b6-538f-b94a-2f83cf4a842a"
+StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 Timers = "21f18d07-b854-4dab-86f0-c15a3821819a"
+
+[sources]
+KiteViewers = {path = ".."}
 
 [compat]
 FileIO = "1"
@@ -36,16 +43,3 @@ StaticArrays = "~1.9"
 StructArrays = "0.6.18, 0.7"
 Timers = "0.1.5"
 julia = "1.10, 1.11, 1.12"
-
-[extras]
-ControlPlots = "23c2ee80-7a9e-4350-b264-8e670f12517c"
-HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
-JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
-KiteModels = "b94af626-7959-4878-9336-2adc27959007"
-KitePodModels = "9de5dc81-f971-414a-927b-652b2f41c539"
-PackageCompiler = "9b87118b-4619-50d2-8e1e-99f35a4d4d9d"
-StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
-
-[targets]
-test = ["Test", "KiteModels", "KitePodModels", "PackageCompiler", "ControlPlots"]

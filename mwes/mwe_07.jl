@@ -32,7 +32,7 @@ function sys_state_dict2struct(sys_state_dict)
         sys_state_dict[:azimuth],
         sys_state_dict[:l_tether],
         sys_state_dict[:v_reelout],
-        sys_state_dict[:force],
+        sys_state_dict[:winch_force],
         sys_state_dict[:depower],
         sys_state_dict[:steering],
         sys_state_dict[:heading],

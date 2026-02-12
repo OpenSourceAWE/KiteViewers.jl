@@ -53,7 +53,7 @@ function simulate(integrator, steps)
     (integrator.p.iter - start) / steps
 end
 
-integrator = KiteModels.init_sim!(kps4; delta=0, stiffness_factor=0.5, prn=STATISTIC)
+integrator = KiteModels.init!(kps4; delta=0, stiffness_factor=0.5, prn=STATISTIC)
 
 av_steps = simulate(integrator, STEPS)
 nothing

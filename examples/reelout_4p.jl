@@ -67,7 +67,7 @@ function simulate(integrator, steps; log=false)
     (integrator.p.iter - start) / steps
 end
 
-integrator = KiteModels.init_sim!(kps4, delta=0.00001, stiffness_factor=0.9, prn=STATISTIC)
+integrator = KiteModels.init!(kps4, delta=0.00001, stiffness_factor=0.9, prn=STATISTIC)
 
 av_steps = simulate(integrator, STEPS, log=SAVE_PNG)
 if PLOT_PERFORMANCE

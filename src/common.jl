@@ -217,7 +217,7 @@ function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=
     end
 
     # calculate power and energy
-    power = state.force[1] * state.v_reelout[1]
+    power = state.winch_force[1] * state.v_reelout[1]
     dt = 1/kv.set.sample_freq
     if abs(power) < 0.001
         power = 0
@@ -232,7 +232,7 @@ function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=
             "elevation: $(@sprintf("%7.2f", state.elevation/pi*180.0)) °     " * "heading: $(@sprintf("%7.2f", state.heading/pi*180.0)) °\n" *
             "azimuth:   $(@sprintf("%7.2f", azimuth/pi*180.0)) °     " * "course:  $(@sprintf("%7.2f", state.course/pi*180.0)) °\n" *
             "v_reelout: $(@sprintf("%7.2f", state.v_reelout[1])) m/s   " * "p_mech: $(@sprintf("%8.2f", power)) W\n" *
-            "force:     $(@sprintf("%7.2f", state.force[1]    )) N     " * "energy: $(@sprintf("%8.2f", kv.energy)) Wh\n"
+            "force:     $(@sprintf("%7.2f", state.winch_force[1]    )) N     " * "energy: $(@sprintf("%8.2f", kv.energy)) Wh\n"
         textnode[] = msg
         wind_msg = ""
         if :v_wind_gnd in wind
