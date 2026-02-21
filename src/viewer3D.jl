@@ -68,6 +68,18 @@ Short alias for the AbstractKiteViewer.
 """
 const AKV = AbstractKiteViewer
 
+"""
+    Viewer3D <: AbstractKiteViewer
+
+Mutable struct representing a 3D kite power system viewer, built on GLMakie.
+
+Holds the Makie figure, 3D scene, camera, screen, particle/tether geometry observables,
+settings, UI buttons, optional menus, and simulation bookkeeping (step counter, energy,
+stop flag, etc.).
+
+Use the outer constructors [`Viewer3D(show_kite, autolabel; precompile)`](@ref) or
+[`Viewer3D(set, show_kite, autolabel; precompile, menus)`](@ref) to create an instance.
+"""
 mutable struct Viewer3D <: AKV
     fig::Figure
     scene3D::LScene
@@ -121,12 +133,24 @@ function clear_viewer(kv::AKV; stop_=true)
     end
 end
 
+"""
+    stop(kv::AKV)
+
+Stop the simulation. Sets the viewer's stop flag to `true`, updates the status text
+to "Stopped", and sets `running` to `false`.
+"""
 function stop(kv::AKV)
     kv.stop = true
     status[]="Stopped"
     running[]=false
 end
 
+"""
+    pause(kv::AKV)
+
+Pause the simulation. Sets the viewer's stop flag to `true`, saves the current status
+text in `last_status`, and updates the status to "Paused".
+"""
 function pause(kv::AKV)
     global last_status
     kv.stop = true
@@ -134,6 +158,12 @@ function pause(kv::AKV)
     status[]="Paused"
 end
 
+"""
+    set_status(kv::AKV, status_text)
+
+Set the viewer status text to `status_text`. If the new status is not `"Paused"`,
+the current status is saved in `last_status` before updating.
+"""
 function set_status(kv::AKV, status_text)
     global last_status
     if status_text != "Paused"
@@ -142,10 +172,43 @@ function set_status(kv::AKV, status_text)
     status[] = status_text
 end
 
+"""
+    Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false)
+
+Convenience constructor that loads settings via `se()` and forwards to the full constructor.
+
+# Arguments
+- `show_kite=true`:        whether to render the kite mesh.
+- `autolabel="Autopilot"`: label for the autopilot toggle button.
+
+# Keyword Arguments
+- `precompile=false`: if `true`, the viewer is created in precompilation mode
+  (window hidden, reduced resolution).
+"""
 function Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false)
     set = se()
     Viewer3D(set, show_kite, autolabel; precompile) 
 end
+
+"""
+    Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompile=false, menus=false)
+
+Create and display a 3D viewer window for the kite power system.
+
+Sets up the GLMakie figure, 3D scene with tether cylinders and kite mesh, camera,
+UI buttons (RESET, ZOOM, PLAY, STOP, AUTO, PARKING), status text overlays, and
+optionally dropdown menus for plot selection, tolerances, time lapse, and project management.
+
+# Arguments
+- `set::Settings`:         simulation/viewer settings.
+- `show_kite=true`:        whether to render the kite mesh.
+- `autolabel="Autopilot"`: label for the autopilot toggle button.
+
+# Keyword Arguments
+- `precompile=false`: if `true`, the viewer is created in precompilation mode.
+- `menus=false`:      if `true`, show additional dropdown menus for plot type, tolerances,
+  time lapse, and project management.
+"""
 function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompile=false, menus=false) 
     global last_status
     WIDTH  = 840
@@ -320,6 +383,18 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
     s
 end
 
+"""
+    save_png(viewer; filename="video", index=1)
+
+Save the current viewer frame as a PNG file in the `video/` directory.
+
+The output file is named `<filename><index>.png`, where `index` is zero-padded to
+six digits (e.g. `video000001.png`). The `video/` directory is created if it does not exist.
+
+# Keyword Arguments
+- `filename="video"`: prefix for the output file name.
+- `index=1`:          frame number, zero-padded to six digits in the file name.
+"""
 function save_png(viewer; filename="video", index = 1)
     mkpath("video")
     buffer = IOBuffer()
