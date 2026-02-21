@@ -100,6 +100,19 @@ mutable struct Viewer3D <: AKV
     stop::Bool
 end
 
+"""
+    clear_viewer(kv::AKV; stop_=true)
+
+Reset the viewer to its initial state by setting the step counter to 1 and the accumulated
+energy to zero. By default, the simulation is also stopped (status set to "Stopped" and
+`running` set to `false`). Pass `stop_=false` to reset the counters without stopping.
+
+# Arguments
+- `kv::AKV`: the kite viewer instance.
+
+# Keyword Arguments
+- `stop_=true`: whether to call `stop(kv)` after resetting.
+"""
 function clear_viewer(kv::AKV; stop_=true)
     kv.step = 1
     kv.energy = 0
