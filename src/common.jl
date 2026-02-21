@@ -67,7 +67,29 @@ function init_system(kv::AbstractKiteViewer, scene; show_kite=true)
     text!(scene, textnode2, position  = Point2f(POS_X, POS_Y), fontsize=TEXT_SIZE, font=font, align = (:left, :top), space=:pixel)
 end
 
-# update the kite power system, consisting of the tether, the kite and the state (text and numbers)
+"""
+    update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=true, 
+                  wind=[:v_wind_200m, :v_wind_kite])
+
+Update the 3D visualization of the kite power system, including the tether, kite, and status text.
+
+Moves all tether segment particles and the kite to their new positions based on the given system state,
+recalculates cylinder positions, sizes, and rotations for the tether rendering, updates the kite orientation,
+and refreshes the on-screen status text (time, height, elevation, azimuth, forces, power, energy, wind, etc.).
+
+Supports one-point, four-point, and three-line (four-point 3L) kite models.
+
+# Arguments
+- `kv::AKV`:       the kite viewer instance.
+- `state::SysState`: the current system state containing positions, orientation, and flight data.
+
+# Keyword Arguments
+- `scale=1.0`:       scaling factor applied to all particle positions.
+- `kite_scale=1.0`:  additional scaling factor for the kite relative to the pod/bridle attachment point.
+- `ned=true`:        if `true`, convert the orientation quaternion from NED to viewer convention.
+- `wind=[:v_wind_200m, :v_wind_kite]`: list of wind fields to display in the status text.
+  Supported symbols: `:v_wind_gnd`, `:v_wind_200m`, `:v_wind_kite`.
+"""
 function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=true, 
                        wind=[:v_wind_200m, :v_wind_kite])
     azimuth = state.azimuth
