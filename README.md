@@ -14,10 +14,7 @@ any statement `using KiteViewers` in the examples with `using KiteSimulators`.
 
 ## Installation
 Download and install [Julia 1.10](https://ufechner7.github.io/2024/08/09/installing-julia-with-juliaup.html) or later, if you haven't already.
-Make sure you have the package `TestEnv` in your global environment if you want to run the examples. If you are not sure, run:
-```bash
-julia -e 'using Pkg; Pkg.add("TestEnv")'
-```
+
 If you don't have a project yet, create one with:
 ```bash
 mkdir MyProject
