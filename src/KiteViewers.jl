@@ -6,8 +6,8 @@ import GeometryBasics: GeometryBasics.Point2f, Point3f
 @reexport using KiteUtils
 using Pkg
 
-export Viewer3D, AbstractKiteViewer, AKV                               # types
-export clear_viewer, update_system, save_png, stop, pause, set_status  # functions
+export AKV, AbstractKiteViewer, Viewer3D                               # types
+export clear_viewer, pause, save_png, set_status, stop, update_system  # functions
 @reexport using GLMakie: on
 
 const KITE_SPRINGS = 8 
