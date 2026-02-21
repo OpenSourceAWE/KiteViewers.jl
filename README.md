@@ -1,6 +1,8 @@
 # KiteViewers
 [![Build Status](https://github.com/OpenSourceAWE/KiteViewers.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/OpenSourceAWE/KiteViewers.jl/actions/workflows/CI.yml?query=branch%3Amain)
 [![Coverage](https://codecov.io/gh/OpenSourceAWE/KiteViewers.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/OpenSourceAWE/KiteViewers.jl)
+[![Stable Docs](https://img.shields.io/badge/docs-stable-blue.svg)](https://opensourceawe.github.io/KiteViewers.jl/stable)
+[![Dev Docs](https://img.shields.io/badge/docs-dev-blue.svg)](https://opensourceawe.github.io/KiteViewers.jl/dev)
 
 This package provides different kind of 2D and 3D viewers for kite power system.
 
