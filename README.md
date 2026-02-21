@@ -142,5 +142,5 @@ Prof.dr. H.G.C. (Henri) Werij, Dean of Aerospace Engineering
 ## See also
 - [Research Fechner](https://research.tudelft.nl/en/publications/?search=Uwe+Fechner&pageSize=50&ordering=rating&descending=true) for the scientic background of this code
 - The meta-package  [KiteSimulators](https://github.com/aenarete/KiteSimulators.jl)
-- the packages [KiteModels](https://github.com/ufechner7/KiteModels.jl) and [WinchModels](https://github.com/OpenSourceAWE/WinchModels.jl) and [KitePodModels](https://github.com/OpenSourceAWE/KitePodModels.jl) and [AtmosphericModels](https://github.com/OpenSourceAWE/AtmosphericModels.jl)
-- the package [KiteUtils](https://github.com/ufechner7/KiteUtils.jl) and [KiteControllers](https://github.com/OpenSourceAWE/KiteControllers.jl)
+- the packages [KiteModels](https://github.com/ufechner7/KiteModels.jl) and [WinchModels](https://github.com/aenarete/WinchModels.jl) and [KitePodModels](https://github.com/aenarete/KitePodModels.jl) and [AtmosphericModels](https://github.com/OpenSourceAWE/AtmosphericModels.jl)
+- the package [KiteUtils](https://github.com/OpenSourceAWE/KiteUtils.jl) and [KiteControllers](https://github.com/OpenSourceAWE/KiteControllers.jl)
