@@ -38,6 +38,8 @@ function simulate(integrator, steps; log=false)
     start_time_ns = time_ns()
     time_ = 0.0
     KiteViewers.clear_viewer(viewer)
+    bring_viewer_to_front()
+     # warmup
     for i in 1:steps
         iter = kps4.iter
         if i == 300

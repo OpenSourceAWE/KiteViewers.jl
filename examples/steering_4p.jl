@@ -31,6 +31,8 @@ function simulate(integrator, steps)
     start = integrator.p.iter
     start_time_ns = time_ns()
     clear_viewer(viewer; stop_=false)
+    bring_viewer_to_front()
+     # warmup
     for i in 1:steps
         if i == 300
             set_depower_steering(kps4.kcu, 0.25, 0.1)
