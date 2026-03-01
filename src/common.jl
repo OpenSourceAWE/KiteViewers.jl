@@ -119,7 +119,7 @@ function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=
             kv.points[i] = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
         end
         y_kite = normalize(Point3f(state.X[end-2], state.Y[end-2], state.Z[end-2]) - Point3f(state.X[end-1], state.Y[end-1], state.Z[end-1]))
-        for i in 1:3:length(state.Z) # left and right points, get bigger distance to eachother
+        for i in 1:3:length(state.Z) # left and right points, get bigger distance to each other
             left = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
             right = Point3f(state.X[i+1], state.Y[i+1], state.Z[i+1]) * scale
             distance = norm(left - right)
@@ -235,7 +235,6 @@ function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=
 
     # calculate power and energy
     power = state.winch_force[1] * state.v_reelout[1]
-    dt = 1/kv.set.sample_freq
     if abs(power) < 0.001
         power = 0
     end

@@ -1,8 +1,12 @@
 module KiteViewers
 
 using PrecompileTools: @compile_workload, @setup_workload 
-using FileIO, GLMakie, GeometryBasics, LinearAlgebra, Parameters, Printf, Reexport, Rotations
-import GeometryBasics: GeometryBasics.Point2f, Point3f
+using FileIO, GeometryBasics, LinearAlgebra, Parameters, Printf, Reexport, Rotations
+import GLMakie
+using GLMakie: @extractvalue, @lift, Button, Camera3D, Figure, GridLayout, LScene, Label,
+    Menu, Observable, Point2f, Point3f, Quaternionf, RGBf, Rect, Textbox, Toggle, Vec3f,
+    cam3d!, cameracontrols, mesh!, meshscatter!, Outside, save, scatter!, text!, update_cam!
+    
 @reexport using KiteUtils
 using Pkg
 
