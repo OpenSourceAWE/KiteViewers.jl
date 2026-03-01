@@ -64,7 +64,14 @@ function init_system(kv::AbstractKiteViewer, scene; show_kite=true)
         font=kv.set.fixed_font
     end
     text!(scene, textnode, position  = Point2f(50, 110), fontsize=TEXT_SIZE, font=font, align = (:left, :top), space=:pixel)
-    text!(scene, textnode2, position  = Point2f(POS_X, POS_Y), fontsize=TEXT_SIZE, font=font, align = (:left, :top), space=:pixel)
+    line_spacing = TEXT_SIZE + 4
+    half_line_shift = 0.5 * line_spacing
+    upper_right_lines = [@lift(begin
+        lines = split($textnode2, '\n')
+        i <= length(lines) ? lines[i] : ""
+    end) for i in 1:5]
+    [text!(scene, upper_right_lines[i], position=Point2f(POS_X, POS_Y + half_line_shift - (i-1) * line_spacing),
+           fontsize=TEXT_SIZE, font=font, align=(:left, :top), space=:pixel) for i in 1:5]
 end
 
 """

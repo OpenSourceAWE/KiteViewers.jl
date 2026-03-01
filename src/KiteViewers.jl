@@ -8,6 +8,7 @@ using Pkg
 
 export AKV, AbstractKiteViewer, Viewer3D                               # types
 export clear_viewer, pause, save_png, set_status, stop, update_system  # functions
+export reactivate_host_app, bring_viewer_to_front
 @reexport using GLMakie: on
 
 const KITE_SPRINGS = 8 
@@ -74,6 +75,39 @@ function copy_files(relpath, files)
         chmod(joinpath(relpath, file), 0o774)
     end
     files
+end
+
+function reactivate_host_app()
+    Sys.isapple() || return nothing
+    term = get(ENV, "TERM_PROGRAM", "")
+    cmd = if term == "vscode"
+        `osascript -e 'tell application "Visual Studio Code" to activate'`
+    elseif term == "Apple_Terminal"
+        `osascript -e 'tell application "Terminal" to activate'`
+    elseif term == "iTerm.app" || term == "iTerm2"
+        `osascript -e 'tell application "iTerm" to activate'`
+    else
+        nothing
+    end
+    if cmd !== nothing
+        try
+            run(pipeline(cmd, stdout=devnull, stderr=devnull))
+        catch
+        end
+    end
+    nothing
+end
+
+function bring_viewer_to_front()
+    if Sys.isapple()
+        sleep(0.2)
+        try
+            script = "tell application \"System Events\" to set frontmost of first process whose unix id is $(getpid()) to true"
+            run(pipeline(`osascript -e $script`, stdout=devnull, stderr=devnull))
+        catch
+        end
+    end
+    nothing
 end
 
 @setup_workload begin

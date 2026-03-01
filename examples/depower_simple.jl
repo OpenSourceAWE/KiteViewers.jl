@@ -33,6 +33,8 @@ function simulate(integrator, steps)
     start_time_ns = time_ns()
     j=0; k=0
     KiteViewers.clear_viewer(viewer)
+    bring_viewer_to_front()
+     # warmup
     GC.gc()
     GC.enable(false)
     max_time = 0

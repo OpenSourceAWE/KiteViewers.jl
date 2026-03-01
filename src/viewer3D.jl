@@ -324,6 +324,12 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
                           btn_PARKING, btn_STOP, sw, label]
     gl_screen = display(fig)
 
+    on(fig.scene.events.window_open) do is_open
+        if !is_open
+            reactivate_host_app()
+        end
+    end
+
     FLYING[1] = false
     PLAYING[1] = false
     GUI_ACTIVE[1] = true
@@ -374,10 +380,23 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
         end
         s.stop = ! running[]
     end
-    on(fig.scene.events.window_area) do x
-        dx = x.widths[1] - WIDTH
-        dy = x.widths[2] - HEIGHT
-        txt2.position[] = Point2f(POS_X+dx, POS_Y+dy)
+    margin_x = WIDTH - POS_X
+    margin_y = HEIGHT - POS_Y
+    line_spacing = TEXT_SIZE + 4
+    half_line_shift = 0.5 * line_spacing
+    function update_upper_right_text(vp)
+        base_x = vp.origin[1] + vp.widths[1] - margin_x
+        base_y = vp.origin[2] + vp.widths[2] - margin_y + half_line_shift
+        for (i, t) in enumerate(txt2)
+            t.position[] = Point2f(base_x, base_y - (i-1) * line_spacing)
+        end
+    end
+    update_upper_right_text(scene3D.scene.viewport[])
+    on(scene3D.scene.viewport) do vp
+        update_upper_right_text(vp)
+    end
+    on(fig.scene.events.window_area) do _
+        update_upper_right_text(scene3D.scene.viewport[])
     end
     status[] = "Stopped"
     s
