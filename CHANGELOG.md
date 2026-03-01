@@ -1,5 +1,15 @@
 # Changelog
-### KiteViewers v0.5 - 2026-02-12
+
+### KiteViewers v0.5.1 - 2026-03-01
+#### Changes
+- now tested on MacOS, adjusted text position and font for MacOS
+- fix JETLS warnings
+
+#### Added
+- function bring_viewer_to_front(); Mac only, does nothing otherwise
+- function reactivate_host_app();   Mac only, does nothing otherwise
+
+### KiteViewers v0.5.0 - 2026-02-12
 #### Changes
 - BREAKING: update KiteUtils to 1.11.2
 - use a workspace "examples" instead of TestEnv -> min Julia version now 1.11
