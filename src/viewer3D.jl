@@ -296,8 +296,10 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
     text!(scene3D, "x", position = Point3f(17, 0,0), fontsize = fontsize2, align = (:center, :center))
     text!(scene3D, "y", position = Point3f( 0, 14.5, 0), fontsize = fontsize2, align = (:center, :center))
 
-    text!(scene2D, status, position = Point2f( 20, 0), fontsize = TEXT_SIZE, align = (:left, :bottom), space=:pixel)
-    text!(scene2D, plot_file, position = Point2f( 420, 0), fontsize = TEXT_SIZE, align = (:left, :bottom), space=:pixel)
+    font = default_viewer_font(set)
+
+    text!(scene2D, status, position = Point2f( 20, 0), fontsize = TEXT_SIZE, font=font, align = (:left, :bottom), space=:pixel)
+    text!(scene2D, plot_file, position = Point2f( 420, 0), fontsize = TEXT_SIZE, font=font, align = (:left, :bottom), space=:pixel)
 
     textnode2[]="depower:\nsteering:\n"
 

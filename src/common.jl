@@ -50,19 +50,7 @@ function init_system(kv::AbstractKiteViewer, scene; show_kite=true)
     if show_kite
         meshscatter!(scene, kite_pos, marker=KITE, markersize = 0.25, rotation=quat, color=:blue)
     end
-    if Sys.islinux()
-        lin_font="/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf"
-        if isfile(lin_font)
-            font=lin_font
-        else
-            font="/usr/share/fonts/truetype/freefont/FreeMono.ttf"
-        end
-    else
-        font="Courier New"
-    end
-    if kv.set.fixed_font != ""
-        font=kv.set.fixed_font
-    end
+    font = default_viewer_font(kv.set)
     text!(scene, textnode, position  = Point2f(50, 110), fontsize=TEXT_SIZE, font=font, align = (:left, :top), space=:pixel)
     line_spacing = TEXT_SIZE + 4
     half_line_shift = 0.5 * line_spacing

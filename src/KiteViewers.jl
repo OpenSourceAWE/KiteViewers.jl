@@ -15,6 +15,25 @@ const KITE_SPRINGS = 8
 const POS_Y = 787 # position of the text in the upper right corner
 const POS_X = 626
 
+function default_viewer_font(set)
+    if Sys.islinux()
+        lin_font = "/usr/share/fonts/truetype/ttf-bitstream-vera/VeraMono.ttf"
+        if isfile(lin_font)
+            font = lin_font
+        else
+            font = "/usr/share/fonts/truetype/freefont/FreeMono.ttf"
+        end
+    elseif Sys.isapple()
+        font = "Menlo Bold"
+    else
+        font = "Courier New"
+    end
+    if set.fixed_font != ""
+        font = set.fixed_font
+    end
+    font
+end
+
 function __init__()
     if isdir(joinpath(pwd(), "data")) && isfile(joinpath(pwd(), "data", "system.yaml"))
         set_data_path(joinpath(pwd(), "data"))
