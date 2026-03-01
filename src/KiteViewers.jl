@@ -12,7 +12,7 @@ using Pkg
 
 export AKV, AbstractKiteViewer, Viewer3D                               # types
 export clear_viewer, pause, save_png, set_status, stop, update_system  # functions
-export reactivate_host_app, bring_viewer_to_front
+export bring_viewer_to_front, reactivate_host_app
 @reexport using GLMakie: on
 
 const KITE_SPRINGS = 8 
