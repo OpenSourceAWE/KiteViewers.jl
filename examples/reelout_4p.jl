@@ -21,7 +21,7 @@ STATISTIC = false
 SHOW_VIEWER = true
 SHOW_KITE = true
 SAVE_PNG  = false
-const PLOT_PERFORMANCE = true
+PLOT_PERFORMANCE = true
 # end of user parameter section #
 
 time_vec::Vector{Float64} = zeros(div(STEPS, TIME_LAPSE_RATIO))

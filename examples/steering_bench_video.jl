@@ -23,7 +23,7 @@ STEPS = Int64(round(TIME/dt))
 STATISTIC = false
 SHOW_KITE = false
 SAVE_PNG  = false
-const PLOT_PERFORMANCE = false
+PLOT_PERFORMANCE = false
 # end of user parameter section #
 
 time_vec::Vector{Float64} = zeros(div(STEPS, TIME_LAPSE_RATIO))

@@ -19,7 +19,7 @@ STEPS = Int64(round(TIME/dt))
 STATISTIC = false
 SHOW_VIEWER = true
 SHOW_KITE = true
-const PLOT_PERFORMANCE = true
+PLOT_PERFORMANCE = true
 # end of user parameter section #
 
 time_vec_gc::Vector{Float64} = zeros(STEPS)
