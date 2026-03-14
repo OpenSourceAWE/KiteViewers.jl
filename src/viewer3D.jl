@@ -280,6 +280,7 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
 
     scene2D = LScene(fig[3,1], show_axis=false, height=16)
     scene3D = LScene(sub_fig, show_axis=false, scenekw=(limits=Rect(-7,-10.0,0, 11,10,11), size=(800, 800)))
+    cam3d!(scene3D.scene, center=false)
 
     create_coordinate_system(scene3D)
     cam = cameracontrols(scene3D.scene)
