@@ -15,79 +15,100 @@ or implement a real-time viewer for a system outside of Julia this package will 
 any statement `using KiteViewers` in the examples with `using KiteSimulators`.
 
 ## Installation
-Download and install [Julia 1.10](https://ufechner7.github.io/2024/08/09/installing-julia-with-juliaup.html) or later, if you haven't already.
+Download and install [Julia 1.11](https://ufechner7.github.io/2024/08/09/installing-julia-with-juliaup.html) or later, if you haven't already.
 
 If you don't have a project yet, create one with:
+
 ```bash
 mkdir MyProject
 cd MyProject
 julia --project="."
 ```
+
 and then add the package `KiteViewers` to your project by executing:
+
 ```julia
 using Pkg
 pkg"add KiteViewers"
 ``` 
+
 at the Julia prompt.
 
 You can install the examples with:
+
 ```julia
 using KiteViewers
 KiteViewers.install_examples()
 ```
+
 and get a menu with the examples by typing:
+
 ```julia
 menu()
 ```
 
 You can run the unit tests with the command:
+
 ```julia
 using Pkg
 pkg"test KiteViewers"
 ```
+
 This package should work on Linux, Windows and Mac. If you find a bug, please file an issue.
 
 ## Installation from git (for package developers)
 First, fork this repository using the "Fork" button on the top of the website. Then, clone
 your fork, e.g.:
+
 ```bash
 git clone https://github.com/USERNAME/KiteViewers.jl
 ```
+
 where you have to replace USERNAME with your github user name.
 Then, run the installation script:
+
 ```bash
 cd KiteViewers.jl
 cd bin
 ./install
 cd ..
 ```
+
 The install script creates a version of `Manifest.toml` that works both with the normal project 
 and with the test environment, needed to run the examples.
 To launch Julia, type:
+
 ```bash
 ./bin/run_julia
 ```
+
 For more comfort, add this line to your `.bashrc` file:
+
 ```bash
 alias jl='./bin/run_julia'
 ```
+
 Then you can launch Julia, using the `run_julia` script just by typing `jl`.
 
 ## Exported types
+
 ```julia
 Viewer3D
 AbstractKiteViewer
 AKV
 ```
+
 AKV is just the short form of AbstractKiteViewer, Viewer3D the first implementation of it.
 
 Usage:
+
 ```julia
 show_kite=true
 viewer=Viewer3D(show_kite)
 ```
 
 ## Exported functions
+
 ```julia
 clear_viewer(kv::AKV; stop_=true)
 update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=3.5)
@@ -97,6 +118,7 @@ set_status(kv::AKV, status_text)
 ```
 
 ## Examples
+
 ```julia
 using KiteViewers
 viewer=Viewer3D(true);
