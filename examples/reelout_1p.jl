@@ -64,7 +64,11 @@ function simulate(integrator, steps; log=false)
                 time_ = 0.0
             end
             start_time_ns = time_ns()
-            time_vec[div(i, TIME_LAPSE_RATIO)]=1e-9*time_/(TIME_LAPSE_RATIO*dt)*100.0
+            time_vec[div(i, TIME_LAPSE_RATIO)]=if i>=20
+                1e-9*time_/(TIME_LAPSE_RATIO*dt)*100.0
+            else
+                0.0
+            end
             time_ = 0.0
         end
         # if mod(i, TIME_LAPSE_RATIO) == 0 
