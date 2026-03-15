@@ -1,8 +1,334 @@
-#!/bin/bash
+#!/bin/bash -eu
+# SPDX-FileCopyrightText: 2025 Uwe Fechner
+# SPDX-License-Identifier: MIT
+
 if [[ $(basename $(pwd)) == "bin" ]]; then
     cd ..
 fi
 
-julia -e 'using Pkg; Pkg.add("TestEnv")'
-julia --project -e 'using TestEnv; TestEnv.activate(); using Pkg; Pkg.update()'
-julia --project -e 'include("examples/update_manifest.jl")'
+# Check if juliaup is installed
+if ! command -v juliaup &> /dev/null; then
+    echo "Error: juliaup is not installed. Please install it first."
+    case "$(uname -s)" in
+        Linux|Darwin)
+            echo "  curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.11"
+            ;;
+        MINGW*|MSYS*|CYGWIN*)
+            echo "  winget install --name Julia --id 9NJNWW8PVKMN -e -s msstore"
+            ;;
+        *)
+            echo "  See https://github.com/JuliaLang/juliaup for installation instructions."
+            ;;
+    esac
+    exit 1
+fi
+
+# Check available disk space in home directory (require at least 5 GB)
+_required_kb=$((5 * 1024 * 1024))
+_available_kb=$(df -k "$HOME" | awk 'NR==2 {print $4}')
+if [[ -z "${_available_kb:-}" ]]; then
+    echo "Error: Could not determine free disk space for $HOME."
+    exit 1
+fi
+if (( _available_kb < _required_kb )); then
+    _available_gb=$(awk -v kb="$_available_kb" 'BEGIN {printf "%.2f", kb/1024/1024}')
+    echo "Error: Not enough free disk space in $HOME."
+    echo "At least 5.00 GB required, found ${_available_gb} GB."
+    exit 1
+fi
+unset _required_kb _available_kb _available_gb
+
+# Ask which Julia version to use
+# Default to 1.12 if it is already installed and is the current default, otherwise 1.11
+if juliaup status 2>/dev/null | grep '^\s*\*' | grep -q '1\.12'; then
+    _default_choice=2
+    _default_julia="1.12"
+else
+    _default_choice=1
+    _default_julia="1.11"
+fi
+echo "Which Julia version do you want to use?"
+echo "  1) Julia 1.11"
+echo "  2) Julia 1.12"
+read -rp "Enter 1 or 2 [default: ${_default_choice}]: " _julia_choice
+case "${_julia_choice}" in
+    1)
+        _desired_julia="1.11"
+        ;;
+    2)
+        _desired_julia="1.12"
+        ;;
+    "")
+        _desired_julia="${_default_julia}"
+        ;;
+    *)
+        echo "Invalid choice: '${_julia_choice}'. Please enter 1 or 2."
+        exit 1
+        ;;
+esac
+echo "Installing and activating Julia ${_desired_julia}..."
+juliaup add "${_desired_julia}"
+juliaup default "${_desired_julia}"
+echo "Julia ${_desired_julia} is now the default."
+echo
+
+# Detect Julia version
+julia_version=$(julia --version | awk '{print($3)}')
+julia_major=${julia_version:0:3}
+if [[ $julia_major == "1.1" ]]; then
+    julia_major=${julia_version:0:4}
+fi
+
+echo "Detected Julia version: $julia_version (major: $julia_major)"
+
+export JULIA_PKG_SERVER_REGISTRY_PREFERENCE=eager
+
+if [[ "$(uname -s)" == "Linux" ]]; then
+    export FONTCONFIG_FILE=/etc/fonts/fonts.conf
+    # Preload Julia-bundled libraries to avoid version conflicts with older system libs.
+    # On Ubuntu 22.04: OpenSSL 3.0.2 (artifacts need 3.3+), fontconfig 2.13 (missing
+    # FcConfigSetDefaultSubstitute added in 2.15). The dynamic linker reuses already-loaded
+    # system libs instead of the bundled ones, so we force the bundled versions in first.
+    _PRELOADS=()
+    _BUNDLED=$(find ~/.julia/artifacts -maxdepth 3 -name "libcrypto.so.3"   -path "*/lib/*" 2>/dev/null | head -1); [[ -n "$_BUNDLED" ]] && _PRELOADS+=("$_BUNDLED")
+    # Pick the fontconfig that exports FcConfigSetDefaultSubstitute (needed by Pango >= 1.57).
+    # Multiple artifact versions may coexist; `find | head -1` can return the wrong one.
+    _BUNDLED=""
+    for _fc in $(find ~/.julia/artifacts -maxdepth 3 -name "libfontconfig.so.1" -path "*/lib/*" 2>/dev/null); do
+        if nm -D "$_fc" 2>/dev/null | grep -q FcConfigSetDefaultSubstitute; then
+            _BUNDLED="$_fc"
+            break
+        fi
+    done
+    [[ -n "$_BUNDLED" ]] && _PRELOADS+=("$_BUNDLED")
+    if [[ ${#_PRELOADS[@]} -gt 0 ]]; then
+        export LD_PRELOAD=$(IFS=:; echo "${_PRELOADS[*]}")
+    fi
+    unset _PRELOADS _BUNDLED
+fi
+
+# Detect current git branch
+if [ -d .git ] || git rev-parse --git-dir > /dev/null 2>&1 ; then
+    branch=$(git rev-parse --abbrev-ref HEAD | sed 's/\//-/g')
+else
+    branch=""
+fi
+
+# Delete any existing custom system image for this Julia version and branch
+if [[ $branch != "" ]]; then
+    SOFILE="bin/kps-image-${julia_major}-${branch}.so"
+else
+    SOFILE="bin/kps-image-${julia_major}.so"
+fi
+if test -f "$SOFILE"; then
+    echo "Deleting old system image: $SOFILE"
+    rm -f "$SOFILE"
+fi
+
+# Only accept Julia 1.11 and 1.12
+if [[ $julia_major != "1.11" ]] && [[ $julia_major != "1.12" ]]; then
+    echo "Error: Julia $julia_major is not supported. Only Julia 1.11 and 1.12 are supported."
+    echo "You can install Julia 1.11 with the following commands:"
+    echo "juliaup add 1.11"
+    echo "juliaup default 1.11"
+    exit 1
+fi
+
+# Copy the appropriate default manifest
+if [[ $julia_major == "1.11" ]]; then
+    if [ -f "Manifest-v1.11.toml.default" ]; then
+        cp Manifest-v1.11.toml.default Manifest-v1.11.toml
+        echo "Copied Manifest-v1.11.toml.default to Manifest-v1.11.toml"
+    else
+        echo "Warning: Manifest-v1.11.toml.default not found"
+        exit 1
+    fi
+else
+    if [ -f "Manifest-v1.12.toml.default" ]; then
+        cp Manifest-v1.12.toml.default Manifest-v1.12.toml
+        echo "Copied Manifest-v1.12.toml.default to Manifest-v1.12.toml"
+    else
+        echo "Warning: Manifest-v1.12.toml.default not found"
+        exit 1
+    fi
+fi
+
+# Remove any existing Manifest.toml symlink so Julia creates a fresh regular file.
+if [ -L "Manifest.toml" ]; then
+    rm -f Manifest.toml
+    echo "Removed stale symlink Manifest.toml"
+fi
+if [ -L "Manifest-v${julia_major}.toml" ]; then
+    rm -f "Manifest-v${julia_major}.toml"
+    echo "Removed stale symlink Manifest-v${julia_major}.toml"
+fi
+
+# Instantiate the main project
+FAILED_RESOLVES=()
+RETRIED_RESOLVES=()
+echo "Instantiating project..."
+_ec=0; julia --project -e '
+using Pkg
+function ensure_general_registry()
+    regs = try
+        Pkg.Registry.reachable_registries()
+    catch
+        Pkg.Registry.update()
+        Pkg.Registry.reachable_registries()
+    end
+    if !any(r -> r.name == "General", regs)
+        Pkg.Registry.add("General")
+    else
+        Pkg.Registry.update()
+    end
+end
+try
+    ensure_general_registry()
+    Pkg.resolve()
+    Pkg.instantiate()
+catch e
+    @warn "Pkg.resolve()/instantiate() failed, attempting clean resolve..." exception=e
+    proj_dir = dirname(Base.active_project())
+    for f in readdir(proj_dir)
+        if startswith(f, "Manifest") && endswith(f, ".toml") && !endswith(f, ".default")
+            rm(joinpath(proj_dir, f), force=true)
+        end
+    end
+    ensure_general_registry()
+    Pkg.resolve()
+    Pkg.instantiate()
+    exit(2)
+end
+' || _ec=$?
+if [[ $_ec -eq 2 ]]; then RETRIED_RESOLVES+=("main project")
+elif [[ $_ec -ne 0 ]]; then FAILED_RESOLVES+=("main project"); fi
+# If Pkg.resolve() created a plain Manifest.toml, rename it to the version-specific filename.
+if [ -f "Manifest.toml" ]; then
+    mv Manifest.toml "Manifest-v${julia_major}.toml"
+    echo "Renamed Manifest.toml to Manifest-v${julia_major}.toml"
+fi
+echo "Precompiling main project..."
+julia --project -e 'using Pkg; Pkg.precompile()'
+
+# Instantiate examples and docs sub-projects
+echo "Instantiating examples project..."
+rm -f examples/Manifest*.toml
+cp "Manifest-v${julia_major}.toml" "examples/Manifest-v${julia_major}.toml"
+_ec=0; julia --project=examples -e '
+using Pkg
+try
+    Pkg.resolve()
+    Pkg.instantiate()
+catch e
+    @warn "Pkg.resolve()/instantiate() failed, attempting clean resolve..." exception=e
+    proj_dir = dirname(Base.active_project())
+    for f in readdir(proj_dir)
+        if startswith(f, "Manifest") && endswith(f, ".toml") && !endswith(f, ".default")
+            rm(joinpath(proj_dir, f), force=true)
+        end
+    end
+    Pkg.resolve()
+    Pkg.instantiate()
+    exit(2)
+end
+' || _ec=$?
+if [[ $_ec -eq 2 ]]; then RETRIED_RESOLVES+=("examples")
+elif [[ $_ec -ne 0 ]]; then FAILED_RESOLVES+=("examples"); fi
+echo "Precompiling examples project..."
+julia --project=examples -e 'using Pkg; Pkg.precompile()'
+if [ -f "examples/Manifest.toml" ]; then
+    mv examples/Manifest.toml "examples/Manifest-v${julia_major}.toml"
+    echo "Renamed examples/Manifest.toml to examples/Manifest-v${julia_major}.toml"
+fi
+
+# Docs resolves independently (different dep tree)
+echo "Instantiating docs project..."
+rm -f docs/Manifest*.toml
+_ec=0; julia --project=docs -e '
+using Pkg
+try
+    Pkg.resolve()
+    Pkg.instantiate()
+catch e
+    @warn "Pkg.resolve()/instantiate() failed, attempting clean resolve..." exception=e
+    proj_dir = dirname(Base.active_project())
+    for f in readdir(proj_dir)
+        if startswith(f, "Manifest") && endswith(f, ".toml") && !endswith(f, ".default")
+            rm(joinpath(proj_dir, f), force=true)
+        end
+    end
+    Pkg.resolve()
+    Pkg.instantiate()
+    exit(2)
+end
+' || _ec=$?
+if [[ $_ec -eq 2 ]]; then RETRIED_RESOLVES+=("docs")
+elif [[ $_ec -ne 0 ]]; then FAILED_RESOLVES+=("docs"); fi
+echo "Precompiling docs project..."
+julia --project=docs -e 'using Pkg; Pkg.precompile()'
+if [ -f "docs/Manifest.toml" ]; then
+    mv docs/Manifest.toml "docs/Manifest-v${julia_major}.toml"
+    echo "Renamed docs/Manifest.toml to docs/Manifest-v${julia_major}.toml"
+fi
+
+echo
+if [[ ${#FAILED_RESOLVES[@]} -eq 0 && ${#RETRIED_RESOLVES[@]} -eq 0 ]]; then
+    echo "Resolve/instantiate report: all resolve calls succeeded on the first attempt."
+elif [[ ${#FAILED_RESOLVES[@]} -eq 0 ]]; then
+    echo "Resolve/instantiate report: all resolve calls succeeded, but the following needed a clean retry"
+    echo "  (original pinned package versions were NOT used):"
+    for _label in "${RETRIED_RESOLVES[@]}"; do
+        echo "  - ${_label}"
+    done
+else
+    echo "Resolve/instantiate report: the following resolve calls FAILED:"
+    for _label in "${FAILED_RESOLVES[@]}"; do
+        echo "  - ${_label}"
+    done
+    if [[ ${#RETRIED_RESOLVES[@]} -gt 0 ]]; then
+        echo "  The following needed a clean retry (original pinned package versions were NOT used):"
+        for _label in "${RETRIED_RESOLVES[@]}"; do
+            echo "  - ${_label}"
+        done
+    fi
+fi
+
+echo
+printf "\033[1;32mInstallation complete!\033[0m\n"
+echo
+echo "You can now launch Julia by typing"
+echo "cd .."
+echo "bin/run_julia"
+echo "and then get the menu with the examples by typing:"
+echo "menu()"
+
+# Add alias to shell configuration file
+if [[ "$(uname -s)" == "Linux" && -f ~/.bashrc ]]; then
+    if ! grep -q "alias jl='bin/run_julia'" ~/.bashrc; then
+        echo "alias jl='bin/run_julia'" >> ~/.bashrc
+        echo
+        echo "Added alias 'jl' to ~/.bashrc"
+        echo "Run 'source ~/.bashrc' or restart your terminal to use it"
+    fi
+elif [[ "$(uname -s)" == "Darwin" ]]; then
+    _config_file=""
+    if [[ -f ~/.zshrc ]]; then
+        _config_file=~/.zshrc
+    elif [[ -f ~/.bash_profile ]]; then
+        _config_file=~/.bash_profile
+    elif [[ -f ~/.bashrc ]]; then
+        _config_file=~/.bashrc
+    fi
+    if [[ -n "$_config_file" ]]; then
+        if ! grep -q "alias jl='bin/run_julia'" "$_config_file"; then
+            echo "alias jl='bin/run_julia'" >> "$_config_file"
+            echo
+            echo "Added alias 'jl' to $_config_file"
+            echo "Run 'source $_config_file' or restart your terminal to use it"
+        fi
+    fi
+    unset _config_file
+fi
+
+echo
+
