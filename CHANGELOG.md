@@ -4,6 +4,7 @@
 ### Changes
 - fix startup artifact, zoom is now correct from the beginning
 - fix examples
+- update `install` script
 
 ## KiteViewers v0.5.1 - 2026-03-01
 ### Changes
