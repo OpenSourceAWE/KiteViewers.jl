@@ -1,6 +1,6 @@
 # Changelog
 
-## KiteViewers v 0.5.2
+## KiteViewers v 0.5.2 2026-03-15
 ### Changes
 - fix startup artifact, zoom is now correct from the beginning
 - fix examples
