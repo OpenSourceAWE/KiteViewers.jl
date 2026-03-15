@@ -1,5 +1,10 @@
 # Changelog
 
+## KiteViewers v 0.5.2
+### Changes
+- fix startup artifact, zoom is now correct from the beginning
+- fix examples
+
 ## KiteViewers v0.5.1 - 2026-03-01
 ### Changes
 - now tested on MacOS, adjusted text position and font for MacOS
