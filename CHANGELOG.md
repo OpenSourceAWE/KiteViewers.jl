@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+### Added
+- example `menus_4p.jl`
+
 ## KiteViewers v 0.5.2 2026-03-15
 ### Changes
 - fix startup artifact, zoom is now correct from the beginning
