@@ -2,6 +2,7 @@ using REPL.TerminalMenus
 
 options = ["basic_1p = include(\"basic_1p.jl\")",
            "basic_4p = include(\"basic_4p.jl\")",
+           "menus_4p = include(\"menus_4p.jl\")",
            "depower_bench_video = include(\"depower_bench_video.jl\")",
            "depower_simple = include(\"depower_simple.jl\")",
            "depower = include(\"depower.jl\")",
