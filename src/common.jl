@@ -56,7 +56,7 @@ const WING_RADIUS = 0.3f0
 const POINT_RADIUS = 0.015f0 # absolute, in scene units; the built-in sphere marker (0.07*SCALE)
                               # is sized for the sparse legacy topologies and overlaps into a
                               # solid blob on a dense point set like the V3 kite's 44 points
-const TETHER_POINT_RADIUS = Float32(0.05 * SCALE) # the legacy `init_system` particle size, 4x the
+const TETHER_POINT_RADIUS = Float32(0.045 * SCALE) # the legacy `init_system` particle size, 4x the
                               # thinned tether cylinder: a 2x bead is 2 px at replay zoom, invisible
 
 """
@@ -167,10 +167,11 @@ call [`update_status_text!`](@ref) separately if needed.
 
 # Keyword Arguments
 - `scale=1.0`: scaling factor applied to all point positions.
-- `kite_scale=1.0`: extra scaling of the wing points about the wing's own centroid, so a small
-  wing stays visible next to a long tether. The wing keeps its place and orientation, and the
-  bridle segments follow their moved attachment points. [`update_system`](@ref) scales its kite
-  away from the pod instead, which here would push a whole bridle length off the tether.
+- `kite_scale=1.0`: extra scaling of bridle and wing, so a small kite stays visible next to a long
+  tether. The centre is the end of the main tether — its only point shared with a bridle or wing
+  segment, the KCU — which keeps the tether itself untouched and grows the bridle with the wing,
+  the same convention as [`update_system`](@ref). A topology whose tether ends nowhere falls back
+  to the centroid of the scaled points.
 """
 function update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
     segments = kv.seg_topology
@@ -180,10 +181,14 @@ function update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
     end
 
     is_wing = segments[:, 3] .== Int(WING)
-    wing_points = unique(segments[is_wing, 1:2])
-    if kite_scale != 1 && !isempty(wing_points)
-        center = sum(kv.points[i] for i in wing_points) / length(wing_points)
-        for i in wing_points
+    is_tether = segments[:, 3] .== Int(TETHER)
+    tether_points = unique(segments[is_tether, 1:2])
+    scaled = setdiff(1:n_points, tether_points)
+    if kite_scale != 1 && !isempty(scaled)
+        attachment = intersect(tether_points, unique(segments[.!is_tether, 1:2]))
+        center = isempty(attachment) ? sum(kv.points[i] for i in scaled) / length(scaled) :
+                                       kv.points[first(attachment)]
+        for i in scaled
             kv.points[i] = center + kite_scale * (kv.points[i] - center)
         end
     end
