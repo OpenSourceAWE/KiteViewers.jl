@@ -77,6 +77,14 @@ Holds the Makie figure, 3D scene, camera, screen, particle/tether geometry obser
 settings, UI buttons, optional menus, and simulation bookkeeping (step counter, energy,
 stop flag, etc.).
 
+The `seg_topology`/`wing_*`/`point_positions` fields are `nothing` until [`init`](@ref) sets up
+rendering of an arbitrary point/segment topology (used for the V3 kite); `positions`/
+`markersizes`/`rotation` are then reused (resized) for the tether+bridle layer, the `wing_*`
+triple backs a second, black-colored layer for the wing segments, and `point_positions` backs a
+third layer of small spheres sized for a dense point cloud — the built-in `part_positions` sphere
+marker is sized for the sparse legacy topologies and is too large not to overlap into a solid
+blob on a 44-point kite.
+
 Use the outer constructors [`Viewer3D(show_kite, autolabel; precompile)`](@ref) or
 [`Viewer3D(set, show_kite, autolabel; precompile, menus)`](@ref) to create an instance.
 """
@@ -110,6 +118,11 @@ mutable struct Viewer3D <: AKV
     energy::Float64
     show_kite::Bool
     stop::Bool
+    seg_topology::Union{Nothing, Matrix{Int64}}
+    wing_positions::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
+    wing_markersizes::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
+    wing_rotation::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
+    point_positions::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
 end
 
 """
@@ -345,10 +358,10 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
     rotation       = Observable([Point3f(1,0,0) for x in 1:set.segments+KITE_SPRINGS]) #unit vectors corresponding with
                                                                                         #the orientation of the segments 
     mod_text = 4
-    s = Viewer3D(fig, scene3D, cam, gl_screen, points, pos, part_pos, markersizes, 
-                 rotation, set, btn_RESET, btn_ZOOM_in, btn_ZOOM_out, 
+    s = Viewer3D(fig, scene3D, cam, gl_screen, points, pos, part_pos, markersizes,
+                 rotation, set, btn_RESET, btn_ZOOM_in, btn_ZOOM_out,
                  btn_PLAY_PAUSE, btn_AUTO, btn_PARKING, btn_STOP, menu1, menu2, menu3, menu4, tb, btn_OK,
-                 sw, 0, mod_text, 0, show_kite, false)
+                 sw, 0, mod_text, 0, show_kite, false, nothing, nothing, nothing, nothing, nothing)
     txt2 = init_system(s, s.scene3D; show_kite=show_kite)
 
     camera = cameracontrols(s.scene3D.scene)

@@ -11,7 +11,10 @@ using GLMakie: @extractvalue, @lift, Button, Camera3D, Figure, GridLayout, LScen
 using Pkg
 
 export AKV, AbstractKiteViewer, Viewer3D                               # types
+export SegmentType, TETHER, BRIDLE, WING                               # segment topology types
 export clear_viewer, pause, save_png, set_status, stop, update_system  # functions
+export update_status_text!                                             # shared status text
+export init, load_segments, update_segments!                           # arbitrary point/segment topology
 export bring_viewer_to_front, reactivate_host_app
 @reexport using GLMakie: on
 

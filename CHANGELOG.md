@@ -3,6 +3,11 @@
 ## Unreleased
 ### Added
 - example `menus_4p.jl`
+- example `park_v3.jl`, replaying a V3 kite log against an arbitrary point/segment topology
+  (tether/bridle/wing, thick/thin, yellow/black); new functions `init`, `load_segments`,
+  `update_segments!`, `update_status_text!`, and the `SegmentType` enum
+### Changed
+- BREAKING: update KiteUtils to 0.11.13 (needed to read the newer `Qw/Qx/Qy/Qz` log format)
 
 ## KiteViewers v 0.5.2 2026-03-15
 ### Changes

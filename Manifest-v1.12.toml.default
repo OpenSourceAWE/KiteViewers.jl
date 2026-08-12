@@ -1,8 +1,8 @@
 # This file is machine-generated - editing it directly is not advised
 
-julia_version = "1.12.5"
+julia_version = "1.12.6"
 manifest_format = "2.0"
-project_hash = "f7cd55ba0f94f6de0874b34e0423664e8268ff8d"
+project_hash = "920c9c051b80a84cebbd8a120ab2093941ad72f7"
 
 [[deps.ADTypes]]
 git-tree-sha1 = "f7304359109c768cf32dc5fa2d371565bb63b68a"
@@ -14,6 +14,11 @@ weakdeps = ["ChainRulesCore", "ConstructionBase", "EnzymeCore"]
     ADTypesChainRulesCoreExt = "ChainRulesCore"
     ADTypesConstructionBaseExt = "ConstructionBase"
     ADTypesEnzymeCoreExt = "EnzymeCore"
+
+[[deps.ANSIColoredPrinters]]
+git-tree-sha1 = "574baf8110975760d391c710b6341da1afa48d8c"
+uuid = "a4c015fc-c6ff-483c-b24f-f7ea428134e9"
+version = "0.0.1"
 
 [[deps.AbstractFFTs]]
 deps = ["LinearAlgebra"]
@@ -173,9 +178,9 @@ uuid = "18cc8868-cbac-4acf-b575-c8ff214dc66f"
 version = "1.3.2"
 
 [[deps.BitFlags]]
-git-tree-sha1 = "0691e34b3bb8be9307330f88d1a3c3f25466c24d"
+git-tree-sha1 = "bbe1079eecf9c9fbb52765193ad2bae27ae09bc8"
 uuid = "d1d4a3ce-64b1-5f1a-9ba4-7e7e69966f35"
-version = "0.1.9"
+version = "0.1.10"
 
 [[deps.BitIntegers]]
 deps = ["Random"]
@@ -610,6 +615,12 @@ git-tree-sha1 = "7442a5dfe1ebb773c29cc2962a8980f47221d76c"
 uuid = "ffbed154-4ef7-542d-bbb7-c09d3a79fcae"
 version = "0.9.5"
 
+[[deps.Documenter]]
+deps = ["ANSIColoredPrinters", "AbstractTrees", "Base64", "CodecZlib", "Dates", "DocStringExtensions", "Downloads", "Git", "IOCapture", "InteractiveUtils", "JSON", "Logging", "Markdown", "MarkdownAST", "Pkg", "PrecompileTools", "REPL", "RegistryInstances", "SHA", "TOML", "Test", "Unicode"]
+git-tree-sha1 = "56e9c37b5e7c3b4f080ab1da18d72d5c290e184a"
+uuid = "e30172f5-a6a5-5a46-863b-614d45cd2de4"
+version = "1.17.0"
+
 [[deps.Downloads]]
 deps = ["ArgTools", "FileWatching", "LibCURL", "NetworkOptions"]
 uuid = "f43a241f-c20a-4ad4-852c-f6b1247861c6"
@@ -920,6 +931,24 @@ git-tree-sha1 = "6570366d757b50fabae9f4315ad74d2e40c0560a"
 uuid = "59f7168a-df46-5410-90c8-f2779963d0ec"
 version = "5.2.3+0"
 
+[[deps.Git]]
+deps = ["Git_LFS_jll", "Git_jll", "JLLWrappers", "OpenSSH_jll"]
+git-tree-sha1 = "824a1890086880696fc908fe12a17bcf61738bd8"
+uuid = "d7ba0133-e1db-5d97-8f8c-041e4b3a1eb2"
+version = "1.5.0"
+
+[[deps.Git_LFS_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl"]
+git-tree-sha1 = "8c66e385d631bb934ff05e76d4a566c640c8df69"
+uuid = "020c3dae-16b3-5ae5-87b3-4cb189e250b2"
+version = "3.7.1+0"
+
+[[deps.Git_jll]]
+deps = ["Artifacts", "Expat_jll", "JLLWrappers", "LibCURL_jll", "Libdl", "Libiconv_jll", "OpenSSL_jll", "PCRE2_jll", "Zlib_jll"]
+git-tree-sha1 = "7b16700f9e313c0d972d1222ede50a2076aa0770"
+uuid = "f8c6e375-362e-5223-8a59-34ff63f689eb"
+version = "2.55.0+0"
+
 [[deps.Glib_jll]]
 deps = ["Artifacts", "GettextRuntime_jll", "JLLWrappers", "Libdl", "Libffi_jll", "Libiconv_jll", "Libmount_jll", "PCRE2_jll", "Zlib_jll"]
 git-tree-sha1 = "24f6def62397474a297bfcec22384101609142ed"
@@ -970,6 +999,12 @@ deps = ["LinearAlgebra", "OpenLibm_jll", "SpecialFunctions"]
 git-tree-sha1 = "68c173f4f449de5b438ee67ed0c9c748dc31a2ec"
 uuid = "34004b35-14d8-5ef3-9330-4cdb6864b03a"
 version = "0.3.28"
+
+[[deps.IOCapture]]
+deps = ["Logging", "Random"]
+git-tree-sha1 = "0ee181ec08df7d7c911901ea38baf16f755114dc"
+uuid = "b5f81e59-6552-4d32-b1f0-c071b021bf89"
+version = "1.0.0"
 
 [[deps.IfElse]]
 git-tree-sha1 = "debdd00ffef04665ccbb3e150747a77560e8fad1"
@@ -1210,15 +1245,15 @@ version = "0.4.0"
 
 [[deps.KiteUtils]]
 deps = ["Arrow", "CSV", "DocStringExtensions", "LinearAlgebra", "OrderedCollections", "Parameters", "Parsers", "Pkg", "PrecompileTools", "RecursiveArrayTools", "ReferenceFrameRotations", "Rotations", "StaticArrays", "StructArrays", "StructTypes", "YAML"]
-git-tree-sha1 = "c5b0b84e87e846f03422b3c3eb0c8730eee230c6"
+git-tree-sha1 = "0d7307b9656072383b235e7b4e6ca546bc3fd7ae"
 uuid = "90980105-b163-44e5-ba9f-8b1c83bb0533"
-version = "0.11.4"
+version = "0.11.13"
 
 [[deps.KiteViewers]]
 deps = ["FileIO", "GLMakie", "GeometryBasics", "Joysticks", "KiteUtils", "LinearAlgebra", "Parameters", "Pkg", "PrecompileTools", "Printf", "Reexport", "Rotations", "StaticArrays", "StructArrays", "Timers"]
-path = "."
+path = "/home/ufechner/repos/KiteViewers.jl"
 uuid = "2e593061-95e7-45e4-95f4-df0491f2e601"
-version = "0.5.1"
+version = "0.5.2"
 
 [[deps.Krylov]]
 deps = ["LinearAlgebra", "Printf", "SparseArrays"]
@@ -1260,6 +1295,11 @@ deps = ["ArrayInterface", "LinearAlgebra", "ManualMemory", "SIMDTypes", "Static"
 git-tree-sha1 = "a9eaadb366f5493a5654e843864c13d8b107548c"
 uuid = "10f19ff3-798f-405d-979b-55457f8fc047"
 version = "0.1.17"
+
+[[deps.LazilyInitializedFields]]
+git-tree-sha1 = "0f2da712350b020bc3957f269c9caad516383ee0"
+uuid = "0e77f7df-68c5-4e49-93ce-4cd80f5598bf"
+version = "1.3.0"
 
 [[deps.LazyArtifacts]]
 deps = ["Artifacts", "Pkg"]
@@ -1489,6 +1529,12 @@ version = "0.4.3"
 deps = ["Base64", "JuliaSyntaxHighlighting", "StyledStrings"]
 uuid = "d6f4376e-aef5-505a-96c1-9c027394607a"
 version = "1.11.0"
+
+[[deps.MarkdownAST]]
+deps = ["AbstractTrees", "Markdown"]
+git-tree-sha1 = "93c718d892e73931841089cdc0e982d6dd9cc87b"
+uuid = "d0879d2d-cac2-40c8-9cee-1863dc0c7391"
+version = "0.1.3"
 
 [[deps.MathTeXEngine]]
 deps = ["AbstractTrees", "Automa", "DataStructures", "FreeTypeAbstraction", "GeometryBasics", "LaTeXStrings", "REPL", "RelocatableFolders", "UnicodeFun"]
@@ -1750,6 +1796,12 @@ version = "3.4.4+0"
 deps = ["Artifacts", "Libdl"]
 uuid = "05823500-19ac-5b8b-9628-191a04bc5112"
 version = "0.8.7+0"
+
+[[deps.OpenSSH_jll]]
+deps = ["Artifacts", "JLLWrappers", "Libdl", "OpenSSL_jll", "Zlib_jll"]
+git-tree-sha1 = "b862f484cf659efabffd601c5c920e981c942b63"
+uuid = "9bd350c2-7e96-507f-8002-3f2e150b4e1b"
+version = "10.4.1+0"
 
 [[deps.OpenSSL]]
 deps = ["BitFlags", "Dates", "MozillaCACerts_jll", "NetworkOptions", "OpenSSL_jll", "Sockets"]
@@ -2102,6 +2154,12 @@ version = "3.2.0"
     [deps.ReferenceFrameRotations.weakdeps]
     ForwardDiff = "f6369f11-7733-5829-9624-2563aa707210"
     Zygote = "e88e6eb3-aa80-5325-afca-941959d7151f"
+
+[[deps.RegistryInstances]]
+deps = ["LazilyInitializedFields", "Pkg", "TOML", "Tar"]
+git-tree-sha1 = "ffd19052caf598b8653b99404058fce14828be51"
+uuid = "2792f1a3-b283-48e8-9a74-f99dce5104f3"
+version = "0.1.0"
 
 [[deps.RelocatableFolders]]
 deps = ["SHA", "Scratch"]
@@ -2663,9 +2721,9 @@ uuid = "781d530d-4396-4725-bb49-402e4bee1e77"
 version = "1.4.0"
 
 [[deps.URIs]]
-git-tree-sha1 = "bef26fb046d031353ef97a82e3fdb6afe7f21b1a"
+git-tree-sha1 = "5253f44481f18cd938d4559d5e44fa82198408a6"
 uuid = "5c2747f8-b7ea-4ff2-ba2e-563bfd36b1d4"
-version = "1.6.1"
+version = "1.6.3"
 
 [[deps.UUIDs]]
 deps = ["Random", "SHA"]

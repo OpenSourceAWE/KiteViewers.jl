@@ -41,6 +41,146 @@ function create_coordinate_system(scene, points = 10, max_x = 15.0)
     end 
 end
 
+"""
+    SegmentType
+
+The three kinds of segment a topology matrix passed to [`init`](@ref) can contain, rendered
+respectively as a thick yellow cylinder (`TETHER`), a thin yellow cylinder (`BRIDLE`), and a
+thin black cylinder (`WING`).
+"""
+@enum SegmentType TETHER=1 BRIDLE=2 WING=3
+
+const TETHER_RADIUS = 1.0f0 # relative to the built-in tether cylinder marker, see `init_system`
+const BRIDLE_RADIUS = 0.3f0
+const WING_RADIUS = 0.3f0
+const POINT_RADIUS = 0.015f0 # absolute, in scene units; the built-in sphere marker (0.07*SCALE)
+                              # is sized for the sparse legacy topologies and overlaps into a
+                              # solid blob on a dense point set like the V3 kite's 44 points
+
+"""
+    load_segments(filename) -> Matrix{Int64}
+
+Read a segment topology CSV like `data/v3_segments.csv` (columns `segment,point1,point2,
+segment_type`; the first column is ignored, it is just the row number) into the `n × 3` integer
+matrix expected by [`init`](@ref): `(point1, point2, segment_type)`, with `segment_type` mapped
+from the strings `"tether"`/`"bridle"`/`"wing"` onto the [`SegmentType`](@ref) values.
+"""
+function load_segments(filename)
+    lines = readlines(filename)
+    type_of = Dict("tether" => Int(TETHER), "bridle" => Int(BRIDLE), "wing" => Int(WING))
+    n = length(lines) - 1
+    segments = Matrix{Int64}(undef, n, 3)
+    for (i, line) in enumerate(@view lines[2:end])
+        fields = split(line, ',')
+        segments[i, 1] = parse(Int64, fields[2])
+        segments[i, 2] = parse(Int64, fields[3])
+        segments[i, 3] = type_of[fields[4]]
+    end
+    segments
+end
+
+"""
+    init(kv::AKV, segments::AbstractMatrix{<:Integer})
+
+Set up `kv` to render an arbitrary point/segment topology instead of the built-in one-point/
+four-point/three-line kite models — used to replay a V3 kite log. `segments` is an `n × 3`
+integer matrix of `(point1, point2, segment_type)`, one row per segment, with `segment_type` one
+of the [`SegmentType`](@ref) values; load it from a CSV with [`load_segments`](@ref).
+
+Tether and bridle segments reuse the viewer's built-in yellow tether layer (`kv.positions`/
+`kv.markersizes`/`kv.rotation`, resized), with tether segments rendered thicker than bridle
+segments; wing segments get a new black layer. The built-in point-sphere layer (`kv.part_positions`) is hidden and replaced by a new layer with
+a much smaller marker, sized for a dense point cloud. Call [`update_segments!`](@ref) every frame
+afterwards to move the points.
+"""
+function init(kv::AKV, segments::AbstractMatrix{<:Integer})
+    n_points = maximum(@view segments[:, 1:2])
+    is_wing = segments[:, 3] .== Int(WING)
+    n_tb = count(!, is_wing)
+    n_wing = count(is_wing)
+
+    kv.seg_topology = Matrix{Int64}(segments)
+    kv.points = Vector{Point3f}(undef, n_points)
+    kv.part_positions[] = Point3f[] # hide the built-in (oversized) point-sphere layer
+
+    tb_radius = [t == Int(TETHER) ? TETHER_RADIUS : BRIDLE_RADIUS for t in segments[.!is_wing, 3]]
+    kv.positions[]   = [Point3f(0, 0, 0) for _ in 1:n_tb]
+    kv.markersizes[] = [Point3f(tb_radius[i], tb_radius[i], 1) for i in 1:n_tb]
+    kv.rotation[]    = [Point3f(1, 0, 0) for _ in 1:n_tb]
+
+    wing_pos = Observable([Point3f(0, 0, 0) for _ in 1:n_wing])
+    wing_mrk = Observable([Point3f(WING_RADIUS, WING_RADIUS, 1) for _ in 1:n_wing])
+    wing_rot = Observable([Point3f(1, 0, 0) for _ in 1:n_wing])
+    cyl = Cylinder(Point3f(0, 0, -0.5), Point3f(0, 0, 0.5), Float32(0.035 * SCALE))
+    meshscatter!(kv.scene3D, wing_pos, marker=cyl, rotation=wing_rot, markersize=wing_mrk, color=:black)
+    kv.wing_positions   = wing_pos
+    kv.wing_markersizes = wing_mrk
+    kv.wing_rotation    = wing_rot
+
+    point_pos = Observable([Point3f(0, 0, 0) for _ in 1:n_points])
+    sphere = Sphere(Point3f(0, 0, 0), POINT_RADIUS)
+    meshscatter!(kv.scene3D, point_pos, marker=sphere, markersize=1.0, color=:yellow)
+    kv.point_positions = point_pos
+    kv
+end
+
+"""
+    segment_geometry(points, rows, radius_of)
+
+Cylinder midpoint, `(radius, radius, length)` markersize, and unit-vector rotation for each
+segment in `rows` (a `n × 3` slice of `(point1, point2, segment_type)`), reading endpoints from
+`points`. `radius_of(segment_type)` returns the relative radius for a segment type. Shared by the
+two segment layers [`update_segments!`](@ref) writes to.
+"""
+function segment_geometry(points, rows, radius_of)
+    n = size(rows, 1)
+    pos = Vector{Point3f}(undef, n)
+    mrk = Vector{Point3f}(undef, n)
+    rot = Vector{Point3f}(undef, n)
+    for i in 1:n
+        a, b = points[rows[i, 1]], points[rows[i, 2]]
+        pos[i] = (a + b) / 2
+        len = norm(b - a)
+        r = radius_of(rows[i, 3])
+        mrk[i] = Point3f(r, r, len)
+        rot[i] = len > 0 ? normalize(b - a) : Point3f(1, 0, 0)
+    end
+    pos, mrk, rot
+end
+
+"""
+    update_segments!(kv::AKV, state::SysState; scale=1.0)
+
+Update a viewer set up with [`init`](@ref) to the point positions in `state`: moves the point
+spheres and recomputes every segment's cylinder midpoint, length and orientation from the
+topology passed to `init`. Only positions `1:n_points` of `state.X/Y/Z` are used — extra slots
+(VSM panel corners, wing/body origins) are ignored.
+
+Unlike [`update_system`](@ref), this does not touch the kite mesh, quaternion, or status text;
+call [`update_status_text!`](@ref) separately if needed.
+
+# Keyword Arguments
+- `scale=1.0`: scaling factor applied to all point positions.
+"""
+function update_segments!(kv::AKV, state::SysState; scale=1.0)
+    segments = kv.seg_topology
+    n_points = length(kv.points)
+    for i in 1:n_points
+        kv.points[i] = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
+    end
+    kv.point_positions[] = copy(kv.points)
+
+    is_wing = segments[:, 3] .== Int(WING)
+    radius_tb(t) = t == Int(TETHER) ? TETHER_RADIUS : BRIDLE_RADIUS
+    radius_wing(_) = WING_RADIUS
+
+    kv.positions[], kv.markersizes[], kv.rotation[] =
+        segment_geometry(kv.points, @view(segments[.!is_wing, :]), radius_tb)
+    kv.wing_positions[], kv.wing_markersizes[], kv.wing_rotation[] =
+        segment_geometry(kv.points, @view(segments[is_wing, :]), radius_wing)
+    nothing
+end
+
 # draw the kite power system, consisting of the tether, the kite and the state (text and numbers)
 function init_system(kv::AbstractKiteViewer, scene; show_kite=true)
     sphere = Sphere(Point3f(0, 0, 0), Float32(0.07 * SCALE))
@@ -85,12 +225,8 @@ Supports one-point, four-point, and three-line (four-point 3L) kite models.
 - `wind=[:v_wind_200m, :v_wind_kite]`: list of wind fields to display in the status text.
   Supported symbols: `:v_wind_gnd`, `:v_wind_200m`, `:v_wind_kite`.
 """
-function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=true, 
+function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=true,
                        wind=[:v_wind_200m, :v_wind_kite])
-    azimuth = state.azimuth
-    if azimuth ≈ 0 # suppress -0 and replace it with 0
-        azimuth=zero(azimuth)
-    end
     threepoint = length(state.Z) == kv.set.segments+1 # check if this is true
     fourpoint = length(state.Z) == kv.set.segments+5
     fourpoint_3l = length(state.Z) == kv.set.segments*3+6
@@ -233,6 +369,28 @@ function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=
         kite_pos[] = Point3f(state.X[kv.set.segments+1], state.Y[kv.set.segments+1], state.Z[kv.set.segments+1]) * scale
     end
 
+    update_status_text!(kv, state; height, wind)
+end
+
+"""
+    update_status_text!(kv::AKV, state::SysState; height=state.Z[end], wind=[:v_wind_200m, :v_wind_kite])
+
+Refresh the on-screen status text (time, height, elevation, azimuth, forces, power, energy, wind)
+from `state`. Shared by [`update_system`](@ref), which passes the topology-specific `height` it
+already computed, and [`update_segments!`](@ref)-based replay, which has no such convention and
+should pass whichever `state.Z` slot best represents the kite's height.
+
+# Keyword Arguments
+- `height=state.Z[end]`: height value to display [m].
+- `wind=[:v_wind_200m, :v_wind_kite]`: list of wind fields to display in the status text.
+  Supported symbols: `:v_wind_gnd`, `:v_wind_200m`, `:v_wind_kite`.
+"""
+function update_status_text!(kv::AKV, state::SysState; height=state.Z[end],
+                             wind=[:v_wind_200m, :v_wind_kite])
+    azimuth = state.azimuth
+    if azimuth ≈ 0 # suppress -0 and replace it with 0
+        azimuth = zero(azimuth)
+    end
     # calculate power and energy
     power = state.winch_force[1] * state.v_reelout[1]
     if abs(power) < 0.001
@@ -263,6 +421,7 @@ function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=
         textnode2[] = "depower:  $(@sprintf("%6.2f", state.depower*100)) %\n" *
                       "steering: $(@sprintf("%6.2f", state.steering*100)) %" * wind_msg
     end
+    nothing
 end
 
 function reset_view(cam, scene3D)
