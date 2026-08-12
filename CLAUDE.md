@@ -116,3 +116,13 @@ named constants over magic numbers, space around binary operators, `Revise` inst
 never as a project dependency. Markdown is linted with the `.markdownlint.json` in the repo root;
 JETLS settings live in `.JETLSConfig.toml`. Keep `CHANGELOG.md` current — new entries go under
 `## Unreleased` until the version in `Project.toml` is bumped.
+- Inline comments are ONLY allowed when stating a very non-obvious fact, and
+  then keep them to 1 line at most. Give every type/function a docstring ("""
+  not #) instead, but not too verbose, people won't reed it if your docstring is
+  too long, and explain how the code works in the docstring, but not the whole
+  story behind it.
+- Remove or make inline comments 1 line where you see them.
+- In YAML files, consider the comments at the top of the file as docstring where you can add multiline comments.
+- Everything with a docstring should be added to the docs, otherwise you get an
+  error when building the docs.
+
