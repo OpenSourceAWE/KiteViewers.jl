@@ -6,6 +6,10 @@
 - example `park_v3.jl`, replaying a V3 kite log against an arbitrary point/segment topology
   (tether/bridle/wing, thick/thin, yellow/black); new functions `init`, `load_segments`,
   `update_segments!`, `update_status_text!`, and the `SegmentType` enum
+- `kite_scale` keyword of `update_segments!`, enlarging the wing about its own centroid so it
+  stays visible next to a long tether
+- main tether of a segment topology drawn half as thick, with a bead on each sub-segment
+  endpoint so its segmentation stays readable
 ### Changed
 - BREAKING: update KiteUtils to 0.11.13 (needed to read the newer `Qw/Qx/Qy/Qz` log format)
 

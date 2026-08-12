@@ -50,12 +50,14 @@ thin black cylinder (`WING`).
 """
 @enum SegmentType TETHER=1 BRIDLE=2 WING=3
 
-const TETHER_RADIUS = 1.0f0 # relative to the built-in tether cylinder marker, see `init_system`
+const TETHER_RADIUS = 0.5f0 # relative to the built-in tether cylinder marker, see `init_system`
 const BRIDLE_RADIUS = 0.3f0
 const WING_RADIUS = 0.3f0
 const POINT_RADIUS = 0.015f0 # absolute, in scene units; the built-in sphere marker (0.07*SCALE)
                               # is sized for the sparse legacy topologies and overlaps into a
                               # solid blob on a dense point set like the V3 kite's 44 points
+const TETHER_POINT_RADIUS = Float32(0.05 * SCALE) # the legacy `init_system` particle size, 4x the
+                              # thinned tether cylinder: a 2x bead is 2 px at replay zoom, invisible
 
 """
     load_segments(filename) -> Matrix{Int64}
@@ -89,9 +91,11 @@ of the [`SegmentType`](@ref) values; load it from a CSV with [`load_segments`](@
 
 Tether and bridle segments reuse the viewer's built-in yellow tether layer (`kv.positions`/
 `kv.markersizes`/`kv.rotation`, resized), with tether segments rendered thicker than bridle
-segments; wing segments get a new black layer. The built-in point-sphere layer (`kv.part_positions`) is hidden and replaced by a new layer with
-a much smaller marker, sized for a dense point cloud. Call [`update_segments!`](@ref) every frame
-afterwards to move the points.
+segments; wing segments get a new black layer. The built-in point-sphere layer (`kv.part_positions`)
+is hidden and replaced by a new layer with a much smaller marker, sized for a dense point cloud —
+except on the points of the main tether, which keep a bead twice their cylinder's radius so its
+segmentation stays readable. Call [`update_segments!`](@ref) every frame afterwards to move the
+points.
 """
 function init(kv::AKV, segments::AbstractMatrix{<:Integer})
     n_points = maximum(@view segments[:, 1:2])
@@ -119,7 +123,9 @@ function init(kv::AKV, segments::AbstractMatrix{<:Integer})
 
     point_pos = Observable([Point3f(0, 0, 0) for _ in 1:n_points])
     sphere = Sphere(Point3f(0, 0, 0), POINT_RADIUS)
-    meshscatter!(kv.scene3D, point_pos, marker=sphere, markersize=1.0, color=:yellow)
+    point_size = ones(Float32, n_points)
+    point_size[unique(segments[segments[:, 3] .== Int(TETHER), 1:2])] .= TETHER_POINT_RADIUS / POINT_RADIUS
+    meshscatter!(kv.scene3D, point_pos, marker=sphere, markersize=point_size, color=:yellow)
     kv.point_positions = point_pos
     kv
 end
@@ -149,7 +155,7 @@ function segment_geometry(points, rows, radius_of)
 end
 
 """
-    update_segments!(kv::AKV, state::SysState; scale=1.0)
+    update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
 
 Update a viewer set up with [`init`](@ref) to the point positions in `state`: moves the point
 spheres and recomputes every segment's cylinder midpoint, length and orientation from the
@@ -161,16 +167,28 @@ call [`update_status_text!`](@ref) separately if needed.
 
 # Keyword Arguments
 - `scale=1.0`: scaling factor applied to all point positions.
+- `kite_scale=1.0`: extra scaling of the wing points about the wing's own centroid, so a small
+  wing stays visible next to a long tether. The wing keeps its place and orientation, and the
+  bridle segments follow their moved attachment points. [`update_system`](@ref) scales its kite
+  away from the pod instead, which here would push a whole bridle length off the tether.
 """
-function update_segments!(kv::AKV, state::SysState; scale=1.0)
+function update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
     segments = kv.seg_topology
     n_points = length(kv.points)
     for i in 1:n_points
         kv.points[i] = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
     end
-    kv.point_positions[] = copy(kv.points)
 
     is_wing = segments[:, 3] .== Int(WING)
+    wing_points = unique(segments[is_wing, 1:2])
+    if kite_scale != 1 && !isempty(wing_points)
+        center = sum(kv.points[i] for i in wing_points) / length(wing_points)
+        for i in wing_points
+            kv.points[i] = center + kite_scale * (kv.points[i] - center)
+        end
+    end
+    kv.point_positions[] = copy(kv.points)
+
     radius_tb(t) = t == Int(TETHER) ? TETHER_RADIUS : BRIDLE_RADIUS
     radius_wing(_) = WING_RADIUS
 

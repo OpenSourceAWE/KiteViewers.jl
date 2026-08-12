@@ -31,7 +31,7 @@ function replay()
     for (i, state) in enumerate(log.syslog)
         viewer.stop && break
         if mod(i, TIME_LAPSE_RATIO) == 0 || i == length(log.syslog)
-            update_segments!(viewer, state; scale=0.08)
+            update_segments!(viewer, state; scale=0.08, kite_scale=2.0)
             update_status_text!(viewer, state; height=state.Z[1])
             wait_until(start_time_ns + dt*1e9, always_sleep=true)
             start_time_ns = time_ns()
