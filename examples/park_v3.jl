@@ -15,7 +15,15 @@ dt = log.syslog[2].time - log.syslog[1].time
 viewer::Viewer3D = Viewer3D(false)
 init(viewer, segments)
 
+# Guards against a second replay starting while one is already in flight. `viewer.stop` cannot
+# serve as that guard: `Viewer3D`'s own built-in RUN/PAUSE click handler (wired up inside the
+# `Viewer3D` constructor, so it always runs before the handler below) flips `viewer.stop` on
+# *every* click, before this script's handler gets a look at it.
+replaying = Ref(false)
+
 function replay()
+    replaying[] = true
+    viewer.stop = false
     clear_viewer(viewer; stop_=false) # stop_=false: clear_viewer's default stops the viewer,
                                        # which would trip the `viewer.stop && break` below at i=1
     bring_viewer_to_front()
@@ -29,14 +37,16 @@ function replay()
             start_time_ns = time_ns()
         end
     end
+    replaying[] = false
+    stop(viewer)
 end
 
 on(viewer.btn_PLAY.clicks) do _
-    if viewer.stop
-        @async begin
-            replay()
-            stop(viewer)
-        end
+    # The built-in handler already toggled `viewer.stop` above; if a replay is running, clicking
+    # RUN again reads as its own built-in "PAUSE" (viewer.stop is now true, the loop above breaks
+    # on its next iteration) rather than starting a second, overlapping replay.
+    if !replaying[]
+        @async replay()
     end
 end
 on(viewer.btn_STOP.clicks) do _
@@ -44,5 +54,4 @@ on(viewer.btn_STOP.clicks) do _
 end
 
 replay()
-stop(viewer)
 nothing
