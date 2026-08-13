@@ -348,8 +348,12 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
     # fxaa/ssao are already GLMakie's defaults; px_per_unit=2 additionally supersamples the
     # window, which smooths the thin tether/segment cylinders far better than FXAA alone. Left
     # at 1 during `precompile` so the warm-up render in KiteViewers.jl's workload stays cheap.
-    screen_config = GLMakie.Screen(px_per_unit=precompile ? 1.0 : px_per_unit, fxaa=true, ssao=true)
-    gl_screen = display(screen_config, fig)
+    # Set via `activate!` (the backend's default screen config), not a hand-built `GLMakie.Screen`
+    # passed to `display`: a manually constructed screen falls outside the "currently activated
+    # defaults" GLMakie reapplies when it later reconfigures the screen (e.g. `VideoStream`
+    # recording, or the renderloop), which caused the window to hang or crash on replay.
+    GLMakie.activate!(px_per_unit=precompile ? 1.0 : px_per_unit, fxaa=true, ssao=true)
+    gl_screen = display(fig)
 
     on(fig.scene.events.window_open) do is_open
         if !is_open
