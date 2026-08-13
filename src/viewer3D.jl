@@ -186,7 +186,7 @@ function set_status(kv::AKV, status_text)
 end
 
 """
-    Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false)
+    Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false, px_per_unit=2.0)
 
 Convenience constructor that loads settings via `se()` and forwards to the full constructor.
 
@@ -197,14 +197,17 @@ Convenience constructor that loads settings via `se()` and forwards to the full 
 # Keyword Arguments
 - `precompile=false`: if `true`, the viewer is created in precompilation mode
   (window hidden, reduced resolution).
+- `px_per_unit=2.0`: supersampling factor of the GLMakie screen; ignored (forced to `1.0`) while
+  `precompile=true`.
 """
-function Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false)
+function Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false, px_per_unit=2.0)
     set = se()
-    Viewer3D(set, show_kite, autolabel; precompile) 
+    Viewer3D(set, show_kite, autolabel; precompile, px_per_unit)
 end
 
 """
-    Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompile=false, menus=false)
+    Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompile=false, menus=false,
+             px_per_unit=2.0)
 
 Create and display a 3D viewer window for the kite power system.
 
@@ -221,8 +224,12 @@ optionally dropdown menus for plot selection, tolerances, time lapse, and projec
 - `precompile=false`: if `true`, the viewer is created in precompilation mode.
 - `menus=false`:      if `true`, show additional dropdown menus for plot type, tolerances,
   time lapse, and project management.
+- `px_per_unit=2.0`: supersampling factor of the GLMakie screen (`fxaa`/`ssao` stay on); smooths
+  thin tether/segment cylinders at the cost of render time. Forced to `1.0` while
+  `precompile=true` so the warm-up render stays cheap regardless of what's passed.
 """
-function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompile=false, menus=false) 
+function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompile=false, menus=false,
+                   px_per_unit=2.0)
     global last_status
     WIDTH  = 840
     HEIGHT = 900
@@ -341,7 +348,7 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
     # fxaa/ssao are already GLMakie's defaults; px_per_unit=2 additionally supersamples the
     # window, which smooths the thin tether/segment cylinders far better than FXAA alone. Left
     # at 1 during `precompile` so the warm-up render in KiteViewers.jl's workload stays cheap.
-    screen_config = GLMakie.Screen(px_per_unit=precompile ? 1.0 : 2.0, fxaa=true, ssao=true)
+    screen_config = GLMakie.Screen(px_per_unit=precompile ? 1.0 : px_per_unit, fxaa=true, ssao=true)
     gl_screen = display(screen_config, fig)
 
     on(fig.scene.events.window_open) do is_open

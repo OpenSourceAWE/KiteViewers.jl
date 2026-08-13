@@ -19,7 +19,8 @@
 - `park_v3` entry in the interactive `menu()`
 ### Changed
 - BREAKING: update KiteUtils to 0.11.13 (needed to read the newer `Qw/Qx/Qy/Qz` log format)
-- render at `px_per_unit=2` (supersampled), smoothing the thin tether/segment cylinders
+- render at `px_per_unit=2` by default (supersampled), smoothing the thin tether/segment
+  cylinders; configurable via the new `Viewer3D(...; px_per_unit)` keyword
 - replaced ControlPlots with MakieControlPlots in the examples project and the examples;
   `plt.savefig(name)` becomes `savefig(name)`, which exports the figure last displayed (so it
   must follow `display(p)`) and writes into `output/`. The examples project therefore needs
