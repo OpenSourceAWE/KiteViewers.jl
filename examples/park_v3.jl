@@ -34,6 +34,10 @@ function replay()
             update_segments!(viewer, state; scale=0.08, kite_scale=2.0)
             update_status_text!(viewer, state; height=state.Z[1])
             wait_until(start_time_ns + dt*1e9, always_sleep=true)
+            # wait_until's last ~10ms is a non-yielding busy-spin (Timers.jl); without a `yield()`
+            # here the GLFW/render thread never gets scheduled and the window is reported "not
+            # responding" by the window manager after a few seconds of replay.
+            yield()
             start_time_ns = time_ns()
         end
     end
