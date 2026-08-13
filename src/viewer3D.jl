@@ -336,9 +336,13 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
     sw = Toggle(sub_fig, active = false)
     label = Label(sub_fig, "repeat")
     
-    buttongrid[1, 1:9] = [btn_PLAY_PAUSE, btn_ZOOM_in, btn_ZOOM_out, btn_RESET, btn_AUTO, 
+    buttongrid[1, 1:9] = [btn_PLAY_PAUSE, btn_ZOOM_in, btn_ZOOM_out, btn_RESET, btn_AUTO,
                           btn_PARKING, btn_STOP, sw, label]
-    gl_screen = display(fig)
+    # fxaa/ssao are already GLMakie's defaults; px_per_unit=2 additionally supersamples the
+    # window, which smooths the thin tether/segment cylinders far better than FXAA alone. Left
+    # at 1 during `precompile` so the warm-up render in KiteViewers.jl's workload stays cheap.
+    screen_config = GLMakie.Screen(px_per_unit=precompile ? 1.0 : 2.0, fxaa=true, ssao=true)
+    gl_screen = display(screen_config, fig)
 
     on(fig.scene.events.window_open) do is_open
         if !is_open
