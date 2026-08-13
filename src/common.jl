@@ -423,7 +423,9 @@ function update_status_text!(kv::AKV, state::SysState; height=state.Z[end],
     kv.step+=1
 
     # print state values
-    if mod(kv.step, kv.mod_text) == 1
+    # `step - 1` (not `step`), so `mod_text = 1` means "every call" (`mod(x,1)` is always 0)
+    # instead of the previous `mod(step,1)==1`, which could never be true.
+    if mod(kv.step - 1, kv.mod_text) == 0
         msg = "time:      $(@sprintf("%7.2f", state.time)) s\n" *
             "height:    $(@sprintf("%7.2f", height)) m     "  * "length:  $(@sprintf("%7.2f", state.l_tether[1])) m\n" *
             "elevation: $(@sprintf("%7.2f", state.elevation/pi*180.0)) °     " * "heading: $(@sprintf("%7.2f", state.heading/pi*180.0)) °\n" *
