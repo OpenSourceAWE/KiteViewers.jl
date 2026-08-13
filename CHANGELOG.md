@@ -16,8 +16,10 @@
 - `Viewer3D` fields `seg_topology`, `wing_positions`, `wing_markersizes`, `wing_rotation` and
   `point_positions`, backing the segment-topology rendering; all `nothing` until `init_segments` is called
 - `workflow_dispatch` trigger of the CI workflow
+- `park_v3` entry in the interactive `menu()`
 ### Changed
 - BREAKING: update KiteUtils to 0.11.13 (needed to read the newer `Qw/Qx/Qy/Qz` log format)
+- render at `px_per_unit=2` (supersampled), smoothing the thin tether/segment cylinders
 - replaced ControlPlots with MakieControlPlots in the examples project and the examples;
   `plt.savefig(name)` becomes `savefig(name)`, which exports the figure last displayed (so it
   must follow `display(p)`) and writes into `output/`. The examples project therefore needs
