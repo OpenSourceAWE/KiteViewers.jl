@@ -2,6 +2,9 @@
 
 ## KiteViewers v0.6.0 - 2026-08-13
 ### Added
+- `bin/release`, posting release notes to GitHub issue #13 to trigger JuliaRegistrator; checks
+  that both `Manifest-v1.11.toml` and `Manifest-v1.12.toml` match their `.default` counterparts
+  and that the `Project.toml`/`CHANGELOG.md` versions agree before prompting to release
 - example `menus_4p.jl`
 - example `park_v3.jl`, replaying a V3 kite log against an arbitrary point/segment topology
   (tether/bridle/wing, thick/thin, yellow/black); new functions `init_segments`, `load_segments`,
