@@ -77,7 +77,7 @@ Holds the Makie figure, 3D scene, camera, screen, particle/tether geometry obser
 settings, UI buttons, optional menus, and simulation bookkeeping (step counter, energy,
 stop flag, etc.).
 
-The `seg_topology`/`wing_*`/`point_positions` fields are `nothing` until [`init`](@ref) sets up
+The `seg_topology`/`wing_*`/`point_positions` fields are `nothing` until [`init_segments`](@ref) sets up
 rendering of an arbitrary point/segment topology (used for the V3 kite); `positions`/
 `markersizes`/`rotation` are then reused (resized) for the tether+bridle layer, the `wing_*`
 triple backs a second, black-colored layer for the wing segments, and `point_positions` backs a

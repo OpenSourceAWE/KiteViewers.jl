@@ -44,7 +44,7 @@ end
 """
     SegmentType
 
-The three kinds of segment a topology matrix passed to [`init`](@ref) can contain, rendered
+The three kinds of segment a topology matrix passed to [`init_segments`](@ref) can contain, rendered
 respectively as a thick yellow cylinder (`TETHER`), a thin yellow cylinder (`BRIDLE`), and a
 thin black cylinder (`WING`).
 """
@@ -64,7 +64,7 @@ const TETHER_POINT_RADIUS = Float32(0.045 * SCALE) # the legacy `init_system` pa
 
 Read a segment topology CSV like `data/v3_segments.csv` (columns `segment,point1,point2,
 segment_type`; the first column is ignored, it is just the row number) into the `n × 3` integer
-matrix expected by [`init`](@ref): `(point1, point2, segment_type)`, with `segment_type` mapped
+matrix expected by [`init_segments`](@ref): `(point1, point2, segment_type)`, with `segment_type` mapped
 from the strings `"tether"`/`"bridle"`/`"wing"` onto the [`SegmentType`](@ref) values.
 """
 function load_segments(filename)
@@ -157,9 +157,9 @@ end
 """
     update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
 
-Update a viewer set up with [`init`](@ref) to the point positions in `state`: moves the point
+Update a viewer set up with [`init_segments`](@ref) to the point positions in `state`: moves the point
 spheres and recomputes every segment's cylinder midpoint, length and orientation from the
-topology passed to `init`. Only positions `1:n_points` of `state.X/Y/Z` are used — extra slots
+topology passed to `init_segments`. Only positions `1:n_points` of `state.X/Y/Z` are used — extra slots
 (VSM panel corners, wing/body origins) are ignored.
 
 Unlike [`update_system`](@ref), this does not touch the kite mesh, quaternion, or status text;

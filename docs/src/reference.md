@@ -32,7 +32,7 @@ Used to replay a kite log (e.g. from `SymbolicAWEModels`/`V3Kite`) that does not
 one-point/four-point/three-line kite models — see `examples/park_v3.jl`.
 
 ```@docs
-init
+init_segments
 load_segments
 update_segments!
 KiteViewers.segment_geometry

@@ -4,7 +4,7 @@
 ### Added
 - example `menus_4p.jl`
 - example `park_v3.jl`, replaying a V3 kite log against an arbitrary point/segment topology
-  (tether/bridle/wing, thick/thin, yellow/black); new functions `init`, `load_segments`,
+  (tether/bridle/wing, thick/thin, yellow/black); new functions `init_segments`, `load_segments`,
   `update_segments!`, `update_status_text!`, and the `SegmentType` enum
 - `kite_scale` keyword of `update_segments!`, enlarging bridle and wing about the end of the main
   tether so the kite stays visible next to a long tether
@@ -14,7 +14,7 @@
   sample parking log), the two inputs `park_v3.jl` needs; it requires neither KiteModels nor
   SymbolicAWEModels
 - `Viewer3D` fields `seg_topology`, `wing_positions`, `wing_markersizes`, `wing_rotation` and
-  `point_positions`, backing the segment-topology rendering; all `nothing` until `init` is called
+  `point_positions`, backing the segment-topology rendering; all `nothing` until `init_segments` is called
 - `workflow_dispatch` trigger of the CI workflow
 ### Changed
 - BREAKING: update KiteUtils to 0.11.13 (needed to read the newer `Qw/Qx/Qy/Qz` log format)
