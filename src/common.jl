@@ -82,7 +82,7 @@ function load_segments(filename)
 end
 
 """
-    init(kv::AKV, segments::AbstractMatrix{<:Integer})
+    init_segments(kv::AKV, segments::AbstractMatrix{<:Integer})
 
 Set up `kv` to render an arbitrary point/segment topology instead of the built-in one-point/
 four-point/three-line kite models — used to replay a V3 kite log. `segments` is an `n × 3`
@@ -97,7 +97,7 @@ except on the points of the main tether, which keep a bead twice their cylinder'
 segmentation stays readable. Call [`update_segments!`](@ref) every frame afterwards to move the
 points.
 """
-function init(kv::AKV, segments::AbstractMatrix{<:Integer})
+function init_segments(kv::AKV, segments::AbstractMatrix{<:Integer})
     n_points = maximum(@view segments[:, 1:2])
     is_wing = segments[:, 3] .== Int(WING)
     n_tb = count(!, is_wing)

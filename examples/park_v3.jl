@@ -13,7 +13,7 @@ log = load_log("tmp_parking")
 dt = log.syslog[2].time - log.syslog[1].time
 
 viewer::Viewer3D = Viewer3D(false)
-init(viewer, segments)
+init_segments(viewer, segments)
 
 # Guards against a second replay starting while one is already in flight. `viewer.stop` cannot
 # serve as that guard: `Viewer3D`'s own built-in RUN/PAUSE click handler (wired up inside the
