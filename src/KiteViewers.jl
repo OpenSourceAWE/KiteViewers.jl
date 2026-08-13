@@ -84,7 +84,7 @@ function install_examples(add_packages=true)
     if add_packages
         Pkg.add("KiteUtils")
         Pkg.add("KiteModels")
-        Pkg.add("ControlPlots")
+        Pkg.add("MakieControlPlots")
         Pkg.add("LaTeXStrings")
         Pkg.add("StatsBase")
         Pkg.add("Timers")

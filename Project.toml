@@ -1,7 +1,7 @@
 name = "KiteViewers"
 uuid = "2e593061-95e7-45e4-95f4-df0491f2e601"
 authors = ["Uwe Fechner <fechner@aenarete.eu> and contributors"]
-version = "0.5.2"
+version = "0.6.0"
 
 [workspace]
 projects = ["examples", "docs", "test"]
@@ -29,8 +29,8 @@ GLMakie = "~0.11, ~0.12, ~0.13"
 GeometryBasics = "0.5"
 Joysticks = "0.1.2, 0.1.4"
 KiteModels = "0.11.4"
-KiteUtils = "0.11.13"
-Parameters = "0.12"
+KiteUtils = "0.11.13, 0.12"
+Parameters = "0.12, 0.13"
 Pkg = "1.10, 1.11, 1.12"
 PrecompileTools = "1.2, 1.3"
 Reexport = "1"
@@ -41,14 +41,12 @@ Timers = "0.1.5"
 julia = "1.10, 1.11, 1.12"
 
 [extras]
-ControlPlots = "23c2ee80-7a9e-4350-b264-8e670f12517c"
 HTTP = "cd3eb016-35fb-5094-929b-558a96fad6f3"
 JSON3 = "0f8b85d8-7281-11e9-16c2-39a750bddbf1"
 KiteModels = "b94af626-7959-4878-9336-2adc27959007"
 KitePodModels = "9de5dc81-f971-414a-927b-652b2f41c539"
-PackageCompiler = "9b87118b-4619-50d2-8e1e-99f35a4d4d9d"
 StructTypes = "856f2bd8-1eba-4b0a-8007-ebc267875bd4"
 Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
-test = ["Test", "KiteModels", "KitePodModels", "PackageCompiler", "ControlPlots"]
+test = ["Test", "KiteModels", "KitePodModels"]

@@ -108,7 +108,7 @@ on(jsbuttons.btn2) do val; if val stop(viewer) end; end
 
 play()
 stop(viewer)
-using ControlPlots
+using MakieControlPlots
 plot(range(5*TIME_LAPSE_RATIO*dt,steps*dt,step=dt*TIME_LAPSE_RATIO), [time_vec_tot[5:steps], time_vec_gc[5:steps]];  
      xlabel="Simulation time [s]", ylabel="time per frame [ms]", labels=["time total", "time_gc"])    
 

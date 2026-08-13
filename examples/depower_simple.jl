@@ -105,7 +105,7 @@ toc()
 play()
 stop(viewer)
 if PLOT_PERFORMANCE
-    using ControlPlots
+    using MakieControlPlots
     if false
         plotx(range(dt,TIME,step=dt), time_vec_gc, time_vec_sim, time_vec_sim.+time_vec_gc;
               ylabels=["GC time","sim_time","total_time"],

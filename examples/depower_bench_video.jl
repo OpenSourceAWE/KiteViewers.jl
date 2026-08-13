@@ -70,7 +70,7 @@ integrator = KiteModels.init!(kps4; delta=0, stiffness_factor=0.5, prn=STATISTIC
 
 av_steps = simulate(integrator, STEPS, log=SAVE_PNG)
 if PLOT_PERFORMANCE
-    using ControlPlots
+    using MakieControlPlots
     plot(range(0.5,TIME,step=0.5), time_vec; ylabel="CPU time [%]", xlabel="Simulation time [s]")
 end
 # mean with :Dense integrator: 6.66% CPU time, 15 times realtime

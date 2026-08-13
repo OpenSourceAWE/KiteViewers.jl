@@ -1,6 +1,6 @@
 # Changelog
 
-## Unreleased
+## KiteViewers v0.6.0 - 2026-08-13
 ### Added
 - example `menus_4p.jl`
 - example `park_v3.jl`, replaying a V3 kite log against an arbitrary point/segment topology
@@ -10,8 +10,19 @@
   tether so the kite stays visible next to a long tether
 - main tether of a segment topology drawn half as thick, with a bead on each sub-segment
   endpoint so its segmentation stays readable
+- `data/v3_segments.csv` (the V3 kite's 44-point topology) and `data/tmp_parking.arrow` (the
+  sample parking log), the two inputs `park_v3.jl` needs; it requires neither KiteModels nor
+  SymbolicAWEModels
+- `Viewer3D` fields `seg_topology`, `wing_positions`, `wing_markersizes`, `wing_rotation` and
+  `point_positions`, backing the segment-topology rendering; all `nothing` until `init` is called
+- `workflow_dispatch` trigger of the CI workflow
 ### Changed
 - BREAKING: update KiteUtils to 0.11.13 (needed to read the newer `Qw/Qx/Qy/Qz` log format)
+- replaced ControlPlots with MakieControlPlots in the examples project and the examples;
+  `plt.savefig(name)` becomes `savefig(name)`, which exports the figure last displayed (so it
+  must follow `display(p)`) and writes into `output/`. The examples project therefore needs
+  Julia 1.11+ and GLMakie 0.12+; `install_examples()` installs MakieControlPlots too
+- `bin/run_julia` forwards its arguments to julia, with and without a system image
 
 ## KiteViewers v 0.5.2 2026-03-15
 ### Changes
