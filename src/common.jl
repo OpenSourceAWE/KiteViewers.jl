@@ -288,13 +288,6 @@ function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0,
             kv.points[i] = left + (kite_scale-1.0) * y_local
             kv.points[i+1] = right - (kite_scale-1.0) * y_local
         end
-        # # enlarge 3line kite
-        # last_middle_line_pos = Point3f(state.X[kv.set.segments+3], state.Y[kv.set.segments+3], state.Z[kv.set.segments+3]) * scale
-        # for i in kv.set.segments*3+4:length(state.Z)
-        #     pos_abs = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
-        #     pos_rel = pos_abs-last_middle_line_pos
-        #     kv.points[i] = pos_abs + (kite_scale-1.0) * pos_rel
-        # end
     end
     kv.part_positions[] = [(kv.points[k]) for k in 1:length(state.Z)]
 
@@ -377,7 +370,8 @@ function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0,
     kv.markersizes[] = calc_markersizes(kv.set.segments)
     kv.rotation[]   = calc_rotations(kv.set.segments)
 
-    q0 = quat2viewer(state.orient, frame)                 # SVector in the order w,x,y,z
+    attitude = frame == KS ? fromKS2KA(state.orient) : state.orient
+    q0 = quat2viewer(attitude)                            # SVector in the order w,x,y,z
     quat[]     = Quaternionf(q0[2], q0[3], q0[4], q0[1])  # the constructor expects the order x,y,z,w
     if fourpoint
         s = kv.set.segments

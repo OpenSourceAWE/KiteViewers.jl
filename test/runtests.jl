@@ -5,6 +5,7 @@ set_data_path()
 using Test
 
 cd("..")
+include("test_frames.jl")
 include("test_parking.jl")
 
 @testset "KiteViewers.jl" begin
