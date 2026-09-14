@@ -6,9 +6,36 @@ if [[ $(basename $(pwd)) == "bin" ]]; then
     cd ..
 fi
 
-# Check if juliaup is installed
-if ! command -v juliaup &> /dev/null; then
-    echo "Error: juliaup is not installed. Please install it first."
+print_usage() {
+    cat <<'USAGE'
+Usage: bin/install [-y] [-u] [-h]
+
+Install the Julia environments of this repository: the tracked
+Manifest-v<major>.toml.default is copied over Manifest-v<major>.toml, and the main,
+examples and docs projects are instantiated and precompiled from it. Nothing else -
+no test suite, no system image, and nothing outside the repository.
+
+  -y, --yes     no terminal: skip the Julia version menu and use the julia on PATH
+  -u, --update  update the live manifests instead of installing the tracked ones,
+                leaving the .default files untouched
+  -h, --help    print this message
+USAGE
+}
+
+assume_yes=false
+update_manifests=false
+while [[ $# -gt 0 ]]; do
+    case "$1" in
+        -y|--yes)    assume_yes=true ;;
+        -u|--update) update_manifests=true ;;
+        -h|--help)   print_usage; exit 0 ;;
+        *)           echo "Error: unknown option '$1'."; print_usage; exit 1 ;;
+    esac
+    shift
+done
+
+if ! command -v julia &> /dev/null; then
+    echo "Error: julia is not installed. Please install juliaup first."
     case "$(uname -s)" in
         Linux|Darwin)
             echo "  curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.11"
@@ -38,42 +65,49 @@ if (( _available_kb < _required_kb )); then
 fi
 unset _required_kb _available_kb _available_gb
 
-# Ask which Julia version to use
-# Default to 1.12 if it is already installed and is the current default, otherwise 1.11
-if juliaup status 2>/dev/null | grep '^\s*\*' | grep -q '1\.12'; then
-    _default_choice=2
-    _default_julia="1.12"
-else
-    _default_choice=1
-    _default_julia="1.11"
-fi
-echo "Which Julia version do you want to use?"
-echo "  1) Julia 1.11"
-echo "  2) Julia 1.12"
-read -rp "Enter 1 or 2 [default: ${_default_choice}]: " _julia_choice
-case "${_julia_choice}" in
-    1)
-        _desired_julia="1.11"
-        ;;
-    2)
-        _desired_julia="1.12"
-        ;;
-    "")
-        _desired_julia="${_default_julia}"
-        ;;
-    *)
-        echo "Invalid choice: '${_julia_choice}'. Please enter 1 or 2."
+# Ask which Julia version to use. It is addressed as `julia +<channel>`, so the
+# machine's default channel stays where the user put it.
+JULIA=(julia)
+if [[ $assume_yes == false ]]; then
+    if ! command -v juliaup &> /dev/null; then
+        echo "Error: juliaup is not installed, so the Julia version cannot be chosen."
+        echo "Run 'bin/install -y' to install with the julia already on PATH."
         exit 1
-        ;;
-esac
-echo "Installing and activating Julia ${_desired_julia}..."
-juliaup add "${_desired_julia}"
-juliaup default "${_desired_julia}"
-echo "Julia ${_desired_julia} is now the default."
-echo
+    fi
+    if juliaup status 2>/dev/null | grep '^\s*\*' | grep -q '1\.12'; then
+        _default_choice=2
+        _default_julia="1.12"
+    else
+        _default_choice=1
+        _default_julia="1.11"
+    fi
+    echo "Which Julia version do you want to use?"
+    echo "  1) Julia 1.11"
+    echo "  2) Julia 1.12"
+    read -rp "Enter 1 or 2 [default: ${_default_choice}]: " _julia_choice
+    case "${_julia_choice}" in
+        1)
+            _desired_julia="1.11"
+            ;;
+        2)
+            _desired_julia="1.12"
+            ;;
+        "")
+            _desired_julia="${_default_julia}"
+            ;;
+        *)
+            echo "Invalid choice: '${_julia_choice}'. Please enter 1 or 2."
+            exit 1
+            ;;
+    esac
+    echo "Installing Julia ${_desired_julia}..."
+    juliaup add "${_desired_julia}"
+    JULIA=(julia "+${_desired_julia}")
+    echo
+fi
 
 # Detect Julia version
-julia_version=$(julia --version | awk '{print($3)}')
+julia_version=$("${JULIA[@]}" --version | awk '{print($3)}')
 julia_major=${julia_version:0:3}
 if [[ $julia_major == "1.1" ]]; then
     julia_major=${julia_version:0:4}
@@ -128,29 +162,8 @@ fi
 # Only accept Julia 1.11 and 1.12
 if [[ $julia_major != "1.11" ]] && [[ $julia_major != "1.12" ]]; then
     echo "Error: Julia $julia_major is not supported. Only Julia 1.11 and 1.12 are supported."
-    echo "You can install Julia 1.11 with the following commands:"
-    echo "juliaup add 1.11"
-    echo "juliaup default 1.11"
+    echo "Install it with 'juliaup add 1.11' and pick it from the menu of bin/install."
     exit 1
-fi
-
-# Copy the appropriate default manifest
-if [[ $julia_major == "1.11" ]]; then
-    if [ -f "Manifest-v1.11.toml.default" ]; then
-        cp Manifest-v1.11.toml.default Manifest-v1.11.toml
-        echo "Copied Manifest-v1.11.toml.default to Manifest-v1.11.toml"
-    else
-        echo "Warning: Manifest-v1.11.toml.default not found"
-        exit 1
-    fi
-else
-    if [ -f "Manifest-v1.12.toml.default" ]; then
-        cp Manifest-v1.12.toml.default Manifest-v1.12.toml
-        echo "Copied Manifest-v1.12.toml.default to Manifest-v1.12.toml"
-    else
-        echo "Warning: Manifest-v1.12.toml.default not found"
-        exit 1
-    fi
 fi
 
 # Remove any existing Manifest.toml symlink so Julia creates a fresh regular file.
@@ -163,172 +176,88 @@ if [ -L "Manifest-v${julia_major}.toml" ]; then
     echo "Removed stale symlink Manifest-v${julia_major}.toml"
 fi
 
-# Instantiate the main project
-FAILED_RESOLVES=()
-RETRIED_RESOLVES=()
-echo "Instantiating project..."
-_ec=0; julia --project -e '
-using Pkg
-function ensure_general_registry()
-    regs = try
-        Pkg.Registry.reachable_registries()
-    catch
-        Pkg.Registry.update()
-        Pkg.Registry.reachable_registries()
-    end
-    if !any(r -> r.name == "General", regs)
-        Pkg.Registry.add("General")
+# Copy the default manifest of this Julia version over the live one, unless the live
+# manifest is what is being updated
+if [[ $update_manifests == false ]]; then
+    default_manifest="Manifest-v${julia_major}.toml.default"
+    if [ ! -f "$default_manifest" ]; then
+        echo "Error: $default_manifest not found"
+        exit 1
+    fi
+    cp "$default_manifest" "Manifest-v${julia_major}.toml"
+    echo "Copied $default_manifest to Manifest-v${julia_major}.toml"
+fi
+
+# Only the main project has a tracked manifest, so only it installs without resolving.
+REGISTRY='using Pkg
+if any(r -> r.name == "General", Pkg.Registry.reachable_registries())
+    Pkg.Registry.update()
+else
+    Pkg.Registry.add("General")
+end
+'
+if [[ $update_manifests == true ]]; then
+    install_verb="Updating"
+    done_message="All projects updated."
+    MAIN_CODE="${REGISTRY}Pkg.update()"
+    SUBPROJECT_CODE=$MAIN_CODE
+else
+    install_verb="Instantiating"
+    done_message="All projects installed."
+    MAIN_CODE="${REGISTRY}Pkg.instantiate()"
+    SUBPROJECT_CODE="${REGISTRY}Pkg.resolve(); Pkg.instantiate()"
+fi
+
+FAILED_PROJECTS=()
+
+# Install one project and precompile it, recording the project when the install fails.
+install_project() {
+    local label=$1 project=$2 code=$3
+    echo "${install_verb} ${label} project..."
+    if "${JULIA[@]}" "--project=${project}" -e "$code"; then
+        echo "Precompiling ${label} project..."
+        "${JULIA[@]}" "--project=${project}" -e 'using Pkg; Pkg.precompile()'
     else
-        Pkg.Registry.update()
-    end
-end
-try
-    ensure_general_registry()
-    Pkg.resolve()
-    Pkg.instantiate()
-catch e
-    @warn "Pkg.resolve()/instantiate() failed, attempting clean resolve..." exception=e
-    proj_dir = dirname(Base.active_project())
-    for f in readdir(proj_dir)
-        if startswith(f, "Manifest") && endswith(f, ".toml") && !endswith(f, ".default")
-            rm(joinpath(proj_dir, f), force=true)
-        end
-    end
-    ensure_general_registry()
-    Pkg.resolve()
-    Pkg.instantiate()
-    exit(2)
-end
-' || _ec=$?
-if [[ $_ec -eq 2 ]]; then RETRIED_RESOLVES+=("main project")
-elif [[ $_ec -ne 0 ]]; then FAILED_RESOLVES+=("main project"); fi
-# If Pkg.resolve() created a plain Manifest.toml, rename it to the version-specific filename.
+        FAILED_PROJECTS+=("${label}")
+    fi
+}
+
+install_project "main" "." "$MAIN_CODE"
+# Pkg writes a plain Manifest.toml where it found none; name it for this Julia version.
 if [ -f "Manifest.toml" ]; then
     mv Manifest.toml "Manifest-v${julia_major}.toml"
     echo "Renamed Manifest.toml to Manifest-v${julia_major}.toml"
 fi
-echo "Precompiling main project..."
-julia --project -e 'using Pkg; Pkg.precompile()'
 
-# Instantiate examples and docs sub-projects
-echo "Instantiating examples project..."
 rm -f examples/Manifest*.toml
 cp "Manifest-v${julia_major}.toml" "examples/Manifest-v${julia_major}.toml"
-_ec=0; julia --project=examples -e '
-using Pkg
-try
-    Pkg.resolve()
-    Pkg.instantiate()
-catch e
-    @warn "Pkg.resolve()/instantiate() failed, attempting clean resolve..." exception=e
-    proj_dir = dirname(Base.active_project())
-    for f in readdir(proj_dir)
-        if startswith(f, "Manifest") && endswith(f, ".toml") && !endswith(f, ".default")
-            rm(joinpath(proj_dir, f), force=true)
-        end
-    end
-    Pkg.resolve()
-    Pkg.instantiate()
-    exit(2)
-end
-' || _ec=$?
-if [[ $_ec -eq 2 ]]; then RETRIED_RESOLVES+=("examples")
-elif [[ $_ec -ne 0 ]]; then FAILED_RESOLVES+=("examples"); fi
-echo "Precompiling examples project..."
-julia --project=examples -e 'using Pkg; Pkg.precompile()'
+install_project "examples" "examples" "$SUBPROJECT_CODE"
 if [ -f "examples/Manifest.toml" ]; then
     mv examples/Manifest.toml "examples/Manifest-v${julia_major}.toml"
     echo "Renamed examples/Manifest.toml to examples/Manifest-v${julia_major}.toml"
 fi
 
 # Docs resolves independently (different dep tree)
-echo "Instantiating docs project..."
 rm -f docs/Manifest*.toml
-_ec=0; julia --project=docs -e '
-using Pkg
-try
-    Pkg.resolve()
-    Pkg.instantiate()
-catch e
-    @warn "Pkg.resolve()/instantiate() failed, attempting clean resolve..." exception=e
-    proj_dir = dirname(Base.active_project())
-    for f in readdir(proj_dir)
-        if startswith(f, "Manifest") && endswith(f, ".toml") && !endswith(f, ".default")
-            rm(joinpath(proj_dir, f), force=true)
-        end
-    end
-    Pkg.resolve()
-    Pkg.instantiate()
-    exit(2)
-end
-' || _ec=$?
-if [[ $_ec -eq 2 ]]; then RETRIED_RESOLVES+=("docs")
-elif [[ $_ec -ne 0 ]]; then FAILED_RESOLVES+=("docs"); fi
-echo "Precompiling docs project..."
-julia --project=docs -e 'using Pkg; Pkg.precompile()'
+install_project "docs" "docs" "$SUBPROJECT_CODE"
 if [ -f "docs/Manifest.toml" ]; then
     mv docs/Manifest.toml "docs/Manifest-v${julia_major}.toml"
     echo "Renamed docs/Manifest.toml to docs/Manifest-v${julia_major}.toml"
 fi
 
 echo
-if [[ ${#FAILED_RESOLVES[@]} -eq 0 && ${#RETRIED_RESOLVES[@]} -eq 0 ]]; then
-    echo "Resolve/instantiate report: all resolve calls succeeded on the first attempt."
-elif [[ ${#FAILED_RESOLVES[@]} -eq 0 ]]; then
-    echo "Resolve/instantiate report: all resolve calls succeeded, but the following needed a clean retry"
-    echo "  (original pinned package versions were NOT used):"
-    for _label in "${RETRIED_RESOLVES[@]}"; do
+if [[ ${#FAILED_PROJECTS[@]} -gt 0 ]]; then
+    echo "The following projects FAILED:"
+    for _label in "${FAILED_PROJECTS[@]}"; do
         echo "  - ${_label}"
     done
-else
-    echo "Resolve/instantiate report: the following resolve calls FAILED:"
-    for _label in "${FAILED_RESOLVES[@]}"; do
-        echo "  - ${_label}"
-    done
-    if [[ ${#RETRIED_RESOLVES[@]} -gt 0 ]]; then
-        echo "  The following needed a clean retry (original pinned package versions were NOT used):"
-        for _label in "${RETRIED_RESOLVES[@]}"; do
-            echo "  - ${_label}"
-        done
-    fi
+    exit 1
 fi
 
-echo
-printf "\033[1;32mInstallation complete!\033[0m\n"
+printf "\033[1;32m%s\033[0m\n" "$done_message"
 echo
 echo "You can now launch Julia by typing"
 echo "cd .."
 echo "bin/run_julia"
 echo "and then get the menu with the examples by typing:"
 echo "menu()"
-
-# Add alias to shell configuration file
-if [[ "$(uname -s)" == "Linux" && -f ~/.bashrc ]]; then
-    if ! grep -q "alias jl='bin/run_julia'" ~/.bashrc; then
-        echo "alias jl='bin/run_julia'" >> ~/.bashrc
-        echo
-        echo "Added alias 'jl' to ~/.bashrc"
-        echo "Run 'source ~/.bashrc' or restart your terminal to use it"
-    fi
-elif [[ "$(uname -s)" == "Darwin" ]]; then
-    _config_file=""
-    if [[ -f ~/.zshrc ]]; then
-        _config_file=~/.zshrc
-    elif [[ -f ~/.bash_profile ]]; then
-        _config_file=~/.bash_profile
-    elif [[ -f ~/.bashrc ]]; then
-        _config_file=~/.bashrc
-    fi
-    if [[ -n "$_config_file" ]]; then
-        if ! grep -q "alias jl='bin/run_julia'" "$_config_file"; then
-            echo "alias jl='bin/run_julia'" >> "$_config_file"
-            echo
-            echo "Added alias 'jl' to $_config_file"
-            echo "Run 'source $_config_file' or restart your terminal to use it"
-        fi
-    fi
-    unset _config_file
-fi
-
-echo
-
