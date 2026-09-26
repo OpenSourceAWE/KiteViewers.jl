@@ -2,6 +2,7 @@
 /Manifest.toml.bak
 video/video*.png
 .vscode/settings.json
+LocalPreferences.toml
 Manifest-v1.10.toml
 performance.png
 Manifest-v1.11.toml
