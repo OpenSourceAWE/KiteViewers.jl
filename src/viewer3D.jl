@@ -77,13 +77,10 @@ Holds the Makie figure, 3D scene, camera, screen, particle/tether geometry obser
 settings, UI buttons, optional menus, and simulation bookkeeping (step counter, energy,
 stop flag, etc.).
 
-The `seg_topology`/`wing_*`/`point_positions` fields are `nothing` until [`init_segments`](@ref) sets up
-rendering of an arbitrary point/segment topology (used for the V3 kite); `positions`/
-`markersizes`/`rotation` are then reused (resized) for the tether+bridle layer, the `wing_*`
-triple backs a second, black-colored layer for the wing segments, and `point_positions` backs a
-third layer of small spheres sized for a dense point cloud — the built-in `part_positions` sphere
-marker is sized for the sparse legacy topologies and is too large not to overlap into a solid
-blob on a 44-point kite.
+The `definition`/`wing_*`/`point_positions` fields are `nothing` until
+[`init_segments`](@ref) sets up drawing a `SystemDefinition`: `positions`/`markersizes`/
+`rotation` then back its tether and bridle segments, the `wing_*` observables its wing
+segments, and `point_positions` its points.
 
 Use the outer constructors [`Viewer3D(show_kite, autolabel; precompile)`](@ref) or
 [`Viewer3D(set, show_kite, autolabel; precompile, menus)`](@ref) to create an instance.
@@ -93,11 +90,11 @@ mutable struct Viewer3D <: AKV
     scene3D::LScene
     cam::Camera3D
     screen::GLMakie.Screen
-    points::Vector{Point{3, Float32}}
-    positions::Observable{Vector{GeometryBasics.Point{3, Float32}}}
-    part_positions::Observable{Vector{GeometryBasics.Point{3, Float32}}}
-    markersizes::Observable{Vector{GeometryBasics.Point{3, Float32}}}
-    rotation::Observable{Vector{GeometryBasics.Point{3, Float32}}}
+    points::Vector{Point3f}
+    positions::Observable{Vector{Point3f}}
+    part_positions::Observable{Vector{Point3f}}
+    markersizes::Observable{Vector{Point3f}}
+    rotation::Observable{Vector{Point3f}}
     set::Settings
     btn_RESET::Button
     btn_ZOOM_in::Button
@@ -118,11 +115,11 @@ mutable struct Viewer3D <: AKV
     energy::Float64
     show_kite::Bool
     stop::Bool
-    seg_topology::Union{Nothing, Matrix{Int64}}
-    wing_positions::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
-    wing_markersizes::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
-    wing_rotation::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
-    point_positions::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
+    definition::Union{Nothing, SystemDefinition}
+    wing_positions::Union{Nothing, Observable{Vector{Point3f}}}
+    wing_markersizes::Union{Nothing, Observable{Vector{Point3f}}}
+    wing_rotation::Union{Nothing, Observable{Vector{Point3f}}}
+    point_positions::Union{Nothing, Observable{Vector{Point3f}}}
 end
 
 """

@@ -6,6 +6,7 @@ using Test
 
 cd("..")
 include("test_frames.jl")
+include("test_definition.jl")
 include("test_parking.jl")
 
 @testset "KiteViewers.jl" begin

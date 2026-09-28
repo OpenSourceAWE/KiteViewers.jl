@@ -1,20 +1,21 @@
 module KiteViewers
 
 using PrecompileTools: @compile_workload, @setup_workload 
-using FileIO, GeometryBasics, LinearAlgebra, Parameters, Printf, Reexport, Rotations
+using FileIO, LinearAlgebra, Parameters, Printf, Reexport, Rotations
+using GeometryBasics: Cylinder, Sphere
 import GLMakie
 using GLMakie: @extractvalue, @lift, Button, Camera3D, Figure, GridLayout, LScene, Label,
     Menu, Observable, Point2f, Point3f, Quaternionf, RGBf, Rect, Textbox, Toggle, Vec3f,
     cam3d!, cameracontrols, mesh!, meshscatter!, Outside, save, scatter!, text!, update_cam!
     
 @reexport using KiteUtils
+@reexport using KiteGeometry
 using Pkg
 
 export AKV, AbstractKiteViewer, Viewer3D                               # types
-export SegmentType, TETHER, BRIDLE, WING                               # segment topology types
 export clear_viewer, pause, save_png, set_status, stop, update_system  # functions
 export update_status_text!                                             # shared status text
-export init_segments, load_segments, update_segments!                  # arbitrary point/segment topology
+export init_segments, update_segments!                                 # SystemDefinition
 export bring_viewer_to_front, reactivate_host_app
 @reexport using GLMakie: on
 

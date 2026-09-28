@@ -1,19 +1,19 @@
 using KiteViewers, KiteUtils
 using Timers: wait_until
 
-# Replays a V3 kite parking run: `data/tmp_parking.arrow` (see PlanV3.md) driven by the point/
-# segment topology in `data/v3_segments.csv`. Unlike the other examples this needs neither
-# KiteModels nor SymbolicAWEModels — only the log and the topology CSV.
+# Replays a V3 kite parking run: `data/tmp_parking.arrow` (see PlanV3.md) drawn from the V3
+# kite's structure document `data/v3_structure.yml`. Unlike the other examples this needs
+# neither KiteModels nor SymbolicAWEModels — only the log and the structure document.
 # Must be run from the repository root (KiteViewers' `__init__` then finds `./data` on its own).
 
 TIME_LAPSE_RATIO = 1 # 1 = real time; N = N times faster, drawing every N-th log row
 
-segments = load_segments(joinpath(get_data_path(), "v3_segments.csv"))
+definition = load_structure(joinpath(get_data_path(), "v3_structure.yml"))
 log = load_log("tmp_parking")
 dt = log.syslog[2].time - log.syslog[1].time
 
 viewer::Viewer3D = Viewer3D(false)
-init_segments(viewer, segments)
+init_segments(viewer, definition)
 
 # Guards against a second replay starting while one is already in flight. `viewer.stop` cannot
 # serve as that guard: `Viewer3D`'s own built-in RUN/PAUSE click handler (wired up inside the

@@ -41,113 +41,98 @@ function create_coordinate_system(scene, points = 10, max_x = 15.0)
     end 
 end
 
-"""
-    SegmentType
-
-The three kinds of segment a topology matrix passed to [`init_segments`](@ref) can contain, rendered
-respectively as a thick yellow cylinder (`TETHER`), a thin yellow cylinder (`BRIDLE`), and a
-thin black cylinder (`WING`).
-"""
-@enum SegmentType TETHER=1 BRIDLE=2 WING=3
-
-const TETHER_RADIUS = 0.5f0 # relative to the built-in tether cylinder marker, see `init_system`
+const TETHER_RADIUS = 0.5f0 # relative to the tether cylinder of `init_system`
 const BRIDLE_RADIUS = 0.3f0
 const WING_RADIUS = 0.3f0
-const POINT_RADIUS = 0.015f0 # absolute, in scene units; the built-in sphere marker (0.07*SCALE)
-                              # is sized for the sparse legacy topologies and overlaps into a
-                              # solid blob on a dense point set like the V3 kite's 44 points
-const TETHER_POINT_RADIUS = Float32(0.045 * SCALE) # the legacy `init_system` particle size, 4x the
-                              # thinned tether cylinder: a 2x bead is 2 px at replay zoom, invisible
+const POINT_RADIUS = 0.015f0 # in scene units; `init_system`'s spheres blur dense points
+const TETHER_POINT_RADIUS = Float32(0.045 * SCALE) # bead on the tether points
 
 """
-    load_segments(filename) -> Matrix{Int64}
+    segment_kinds(definition::SystemDefinition) -> Vector{Symbol}
 
-Read a segment topology CSV like `data/v3_segments.csv` (columns `segment,point1,point2,
-segment_type`; the first column is ignored, it is just the row number) into the `n × 3` integer
-matrix expected by [`init_segments`](@ref): `(point1, point2, segment_type)`, with `segment_type` mapped
-from the strings `"tether"`/`"bridle"`/`"wing"` onto the [`SegmentType`](@ref) values.
+How each segment of `definition` is drawn: `:tether` for a segment of one of its `tethers`,
+`:wing` for one joining two points of its stations or canopy faces, `:bridle` otherwise.
 """
-function load_segments(filename)
-    lines = readlines(filename)
-    type_of = Dict("tether" => Int(TETHER), "bridle" => Int(BRIDLE), "wing" => Int(WING))
-    n = length(lines) - 1
-    segments = Matrix{Int64}(undef, n, 3)
-    for (i, line) in enumerate(@view lines[2:end])
-        fields = split(line, ',')
-        segments[i, 1] = parse(Int64, fields[2])
-        segments[i, 2] = parse(Int64, fields[3])
-        segments[i, 3] = type_of[fields[4]]
-    end
-    segments
+function segment_kinds(definition::SystemDefinition)
+    tether = Set(i for tether in definition.tethers for i in tether.segments)
+    wing_points = Set(i for block in (definition.stations, definition.canopy_faces)
+                      for component in block for i in component.points)
+    return [i in tether ? :tether : all(in(wing_points), segment.points) ? :wing : :bridle
+            for (i, segment) in enumerate(definition.segments)]
 end
 
 """
-    init_segments(kv::AKV, segments::AbstractMatrix{<:Integer})
+    segment_radius(kind)
 
-Set up `kv` to render an arbitrary point/segment topology instead of the built-in one-point/
-four-point/three-line kite models — used to replay a V3 kite log. `segments` is an `n × 3`
-integer matrix of `(point1, point2, segment_type)`, one row per segment, with `segment_type` one
-of the [`SegmentType`](@ref) values; load it from a CSV with [`load_segments`](@ref).
-
-Tether and bridle segments reuse the viewer's built-in yellow tether layer (`kv.positions`/
-`kv.markersizes`/`kv.rotation`, resized), with tether segments rendered thicker than bridle
-segments; wing segments get a new black layer. The built-in point-sphere layer (`kv.part_positions`)
-is hidden and replaced by a new layer with a much smaller marker, sized for a dense point cloud —
-except on the points of the main tether, which keep a bead twice their cylinder's radius so its
-segmentation stays readable. Call [`update_segments!`](@ref) every frame afterwards to move the
-points.
+Radius of a segment of [`segment_kinds`](@ref) `kind`, relative to the built-in tether
+cylinder.
 """
-function init_segments(kv::AKV, segments::AbstractMatrix{<:Integer})
-    n_points = maximum(@view segments[:, 1:2])
-    is_wing = segments[:, 3] .== Int(WING)
-    n_tb = count(!, is_wing)
-    n_wing = count(is_wing)
+function segment_radius(kind)
+    kind == :tether && return TETHER_RADIUS
+    return kind == :wing ? WING_RADIUS : BRIDLE_RADIUS
+end
 
-    kv.seg_topology = Matrix{Int64}(segments)
+"""
+    segment_points(definition, selected)
+
+Indices of the points on those segments of `definition` for which `selected` is true.
+"""
+function segment_points(definition, selected)
+    return unique(i for (segment, keep) in zip(definition.segments, selected) if keep
+                  for i in segment.points)
+end
+
+"""
+    init_segments(kv::AKV, definition::SystemDefinition)
+
+Set up `kv` to draw the points and segments of `definition` instead of the built-in
+one-point/four-point/three-line kite models; [`update_segments!`](@ref) then moves them.
+Tether and bridle segments go on the yellow tether layer, wing segments on a black one, and
+the points on small spheres in place of `kv.part_positions`, larger on the tether.
+"""
+function init_segments(kv::AKV, definition::SystemDefinition)
+    kinds = segment_kinds(definition)
+    n_points = length(definition.points)
+    n_wing = count(==(:wing), kinds)
+
+    kv.definition = definition
     kv.points = Vector{Point3f}(undef, n_points)
-    kv.part_positions[] = Point3f[] # hide the built-in (oversized) point-sphere layer
+    kv.part_positions[] = Point3f[]
+    kv.positions[], kv.markersizes[], kv.rotation[] =
+        (fill(Point3f(1, 0, 0), length(kinds) - n_wing) for _ in 1:3)
 
-    tb_radius = [t == Int(TETHER) ? TETHER_RADIUS : BRIDLE_RADIUS for t in segments[.!is_wing, 3]]
-    kv.positions[]   = [Point3f(0, 0, 0) for _ in 1:n_tb]
-    kv.markersizes[] = [Point3f(tb_radius[i], tb_radius[i], 1) for i in 1:n_tb]
-    kv.rotation[]    = [Point3f(1, 0, 0) for _ in 1:n_tb]
-
-    wing_pos = Observable([Point3f(0, 0, 0) for _ in 1:n_wing])
-    wing_mrk = Observable([Point3f(WING_RADIUS, WING_RADIUS, 1) for _ in 1:n_wing])
-    wing_rot = Observable([Point3f(1, 0, 0) for _ in 1:n_wing])
+    kv.wing_positions, kv.wing_markersizes, kv.wing_rotation =
+        (Observable(fill(Point3f(1, 0, 0), n_wing)) for _ in 1:3)
     cyl = Cylinder(Point3f(0, 0, -0.5), Point3f(0, 0, 0.5), Float32(0.035 * SCALE))
-    meshscatter!(kv.scene3D, wing_pos, marker=cyl, rotation=wing_rot, markersize=wing_mrk, color=:black)
-    kv.wing_positions   = wing_pos
-    kv.wing_markersizes = wing_mrk
-    kv.wing_rotation    = wing_rot
+    meshscatter!(kv.scene3D, kv.wing_positions, marker=cyl, rotation=kv.wing_rotation,
+                 markersize=kv.wing_markersizes, color=:black)
 
-    point_pos = Observable([Point3f(0, 0, 0) for _ in 1:n_points])
-    sphere = Sphere(Point3f(0, 0, 0), POINT_RADIUS)
+    kv.point_positions = Observable(fill(Point3f(0, 0, 0), n_points))
     point_size = ones(Float32, n_points)
-    point_size[unique(segments[segments[:, 3] .== Int(TETHER), 1:2])] .= TETHER_POINT_RADIUS / POINT_RADIUS
-    meshscatter!(kv.scene3D, point_pos, marker=sphere, markersize=point_size, color=:yellow)
-    kv.point_positions = point_pos
+    tether_points = segment_points(definition, kinds .== :tether)
+    point_size[tether_points] .= TETHER_POINT_RADIUS / POINT_RADIUS
+    sphere = Sphere(Point3f(0, 0, 0), POINT_RADIUS)
+    meshscatter!(kv.scene3D, kv.point_positions, marker=sphere, markersize=point_size,
+                 color=:yellow)
     kv
 end
 
 """
-    segment_geometry(points, rows, radius_of)
+    segment_geometry(points, segments, kinds)
 
 Cylinder midpoint, `(radius, radius, length)` markersize, and unit-vector rotation for each
-segment in `rows` (a `n × 3` slice of `(point1, point2, segment_type)`), reading endpoints from
-`points`. `radius_of(segment_type)` returns the relative radius for a segment type. Shared by the
-two segment layers [`update_segments!`](@ref) writes to.
+of `segments` of [`segment_kinds`](@ref) `kinds`, reading endpoints from `points`.
 """
-function segment_geometry(points, rows, radius_of)
-    n = size(rows, 1)
+function segment_geometry(points, segments, kinds)
+    n = length(segments)
     pos = Vector{Point3f}(undef, n)
     mrk = Vector{Point3f}(undef, n)
     rot = Vector{Point3f}(undef, n)
-    for i in 1:n
-        a, b = points[rows[i, 1]], points[rows[i, 2]]
+    for (i, (segment, kind)) in enumerate(zip(segments, kinds))
+        a, b = points[segment.points[1]], points[segment.points[2]]
         pos[i] = (a + b) / 2
         len = norm(b - a)
-        r = radius_of(rows[i, 3])
+        r = segment_radius(kind)
         mrk[i] = Point3f(r, r, len)
         rot[i] = len > 0 ? normalize(b - a) : Point3f(1, 0, 0)
     end
@@ -157,35 +142,27 @@ end
 """
     update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
 
-Update a viewer set up with [`init_segments`](@ref) to the point positions in `state`: moves the point
-spheres and recomputes every segment's cylinder midpoint, length and orientation from the
-topology passed to `init_segments`. Only positions `1:n_points` of `state.X/Y/Z` are used — extra slots
-(VSM panel corners, wing/body origins) are ignored.
-
-Unlike [`update_system`](@ref), this does not touch the kite mesh, quaternion, or status text;
-call [`update_status_text!`](@ref) separately if needed.
+Move the points and segments set up by [`init_segments`](@ref) to `state`: point `i` of the
+definition is at `state.X/Y/Z[i]`, and slots past its points are ignored. Leaves the kite
+mesh, quaternion and status text alone; see [`update_status_text!`](@ref).
 
 # Keyword Arguments
 - `scale=1.0`: scaling factor applied to all point positions.
-- `kite_scale=1.0`: extra scaling of bridle and wing, so a small kite stays visible next to a long
-  tether. The centre is the end of the main tether — its only point shared with a bridle or wing
-  segment, the KCU — which keeps the tether itself untouched and grows the bridle with the wing,
-  the same convention as [`update_system`](@ref). A topology whose tether ends nowhere falls back
-  to the centroid of the scaled points.
+- `kite_scale=1.0`: extra scaling of bridle and wing about the end of the tether that
+  touches them, or their centroid where none does, as in [`update_system`](@ref).
 """
 function update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
-    segments = kv.seg_topology
+    definition = kv.definition
     n_points = length(kv.points)
     for i in 1:n_points
         kv.points[i] = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
     end
 
-    is_wing = segments[:, 3] .== Int(WING)
-    is_tether = segments[:, 3] .== Int(TETHER)
-    tether_points = unique(segments[is_tether, 1:2])
-    scaled = setdiff(1:n_points, tether_points)
+    kinds = segment_kinds(definition)
+    tether = segment_points(definition, kinds .== :tether)
+    scaled = setdiff(1:n_points, tether)
     if kite_scale != 1 && !isempty(scaled)
-        attachment = intersect(tether_points, unique(segments[.!is_tether, 1:2]))
+        attachment = intersect(tether, segment_points(definition, kinds .!= :tether))
         center = isempty(attachment) ? sum(kv.points[i] for i in scaled) / length(scaled) :
                                        kv.points[first(attachment)]
         for i in scaled
@@ -194,13 +171,11 @@ function update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
     end
     kv.point_positions[] = copy(kv.points)
 
-    radius_tb(t) = t == Int(TETHER) ? TETHER_RADIUS : BRIDLE_RADIUS
-    radius_wing(_) = WING_RADIUS
-
+    is_wing = kinds .== :wing
     kv.positions[], kv.markersizes[], kv.rotation[] =
-        segment_geometry(kv.points, @view(segments[.!is_wing, :]), radius_tb)
+        segment_geometry(kv.points, definition.segments[.!is_wing], kinds[.!is_wing])
     kv.wing_positions[], kv.wing_markersizes[], kv.wing_rotation[] =
-        segment_geometry(kv.points, @view(segments[is_wing, :]), radius_wing)
+        segment_geometry(kv.points, definition.segments[is_wing], kinds[is_wing])
     nothing
 end
 
