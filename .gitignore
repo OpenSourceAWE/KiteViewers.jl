@@ -11,3 +11,5 @@ Manifest-v1.12.toml
 docs/Manifest.toml
 docs/build
 data/tmp_sinus.arrow
+Manifest-v1.13.toml
+examples/Manifest-v1.13.toml

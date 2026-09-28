@@ -67,6 +67,7 @@ unset _required_kb _available_kb _available_gb
 
 # Ask which Julia version to use. It is addressed as `julia +<channel>`, so the
 # machine's default channel stays where the user put it.
+SUPPORTED_JULIA=(1.11 1.12 1.13)
 JULIA=(julia)
 if [[ $assume_yes == false ]]; then
     if ! command -v juliaup &> /dev/null; then
@@ -74,32 +75,23 @@ if [[ $assume_yes == false ]]; then
         echo "Run 'bin/install -y' to install with the julia already on PATH."
         exit 1
     fi
-    if juliaup status 2>/dev/null | grep '^\s*\*' | grep -q '1\.12'; then
-        _default_choice=2
-        _default_julia="1.12"
-    else
-        _default_choice=1
-        _default_julia="1.11"
-    fi
+    _default_choice=1
+    for i in "${!SUPPORTED_JULIA[@]}"; do
+        if juliaup status 2>/dev/null | grep '^\s*\*' | grep -q "${SUPPORTED_JULIA[$i]//./\\.}"; then
+            _default_choice=$((i + 1))
+        fi
+    done
     echo "Which Julia version do you want to use?"
-    echo "  1) Julia 1.11"
-    echo "  2) Julia 1.12"
-    read -rp "Enter 1 or 2 [default: ${_default_choice}]: " _julia_choice
-    case "${_julia_choice}" in
-        1)
-            _desired_julia="1.11"
-            ;;
-        2)
-            _desired_julia="1.12"
-            ;;
-        "")
-            _desired_julia="${_default_julia}"
-            ;;
-        *)
-            echo "Invalid choice: '${_julia_choice}'. Please enter 1 or 2."
-            exit 1
-            ;;
-    esac
+    for i in "${!SUPPORTED_JULIA[@]}"; do
+        echo "  $((i + 1))) Julia ${SUPPORTED_JULIA[$i]}"
+    done
+    read -rp "Enter 1-${#SUPPORTED_JULIA[@]} [default: ${_default_choice}]: " _julia_choice
+    _julia_choice=${_julia_choice:-$_default_choice}
+    if ! [[ $_julia_choice =~ ^[0-9]+$ ]] || (( _julia_choice < 1 || _julia_choice > ${#SUPPORTED_JULIA[@]} )); then
+        echo "Invalid choice: '${_julia_choice}'. Please enter 1-${#SUPPORTED_JULIA[@]}."
+        exit 1
+    fi
+    _desired_julia=${SUPPORTED_JULIA[$((_julia_choice - 1))]}
     echo "Installing Julia ${_desired_julia}..."
     juliaup add "${_desired_julia}"
     JULIA=(julia "+${_desired_julia}")
@@ -159,10 +151,9 @@ if test -f "$SOFILE"; then
     rm -f "$SOFILE"
 fi
 
-# Only accept Julia 1.11 and 1.12
-if [[ $julia_major != "1.11" ]] && [[ $julia_major != "1.12" ]]; then
-    echo "Error: Julia $julia_major is not supported. Only Julia 1.11 and 1.12 are supported."
-    echo "Install it with 'juliaup add 1.11' and pick it from the menu of bin/install."
+if [[ " ${SUPPORTED_JULIA[*]} " != *" $julia_major "* ]]; then
+    echo "Error: Julia $julia_major is not supported. Supported: ${SUPPORTED_JULIA[*]}."
+    echo "Install one with 'juliaup add <version>' and pick it from the menu of bin/install."
     exit 1
 fi
 
