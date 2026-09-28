@@ -1,5 +1,14 @@
 # Changelog
 
+## Unreleased
+### Changed
+- BREAKING: `update_system` takes `frame::FrameConvention=KA` in place of `ned`. It says
+  which convention `state.orient` is in: `KA` for a log written by KiteUtils 0.13 or
+  later, `KS` for an older one. The kite is drawn the same way round either way.
+  `ned=false` meant "already in the viewer convention" and has no successor; the demo
+  states it was used with now store `KA`, so those calls just drop the keyword.
+- compat bound on KiteUtils raised to `0.13`.
+
 ## KiteViewers v0.6.0 - 2026-08-13
 ### Added
 - `bin/release`, posting release notes to GitHub issue #13 to trigger JuliaRegistrator; checks

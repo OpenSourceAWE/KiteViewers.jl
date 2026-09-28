@@ -226,7 +226,7 @@ function init_system(kv::AbstractKiteViewer, scene; show_kite=true)
 end
 
 """
-    update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=true, 
+    update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, frame=KA,
                   wind=[:v_wind_200m, :v_wind_kite])
 
 Update the 3D visualization of the kite power system, including the tether, kite, and status text.
@@ -244,12 +244,14 @@ Supports one-point, four-point, and three-line (four-point 3L) kite models.
 # Keyword Arguments
 - `scale=1.0`:       scaling factor applied to all particle positions.
 - `kite_scale=1.0`:  additional scaling factor for the kite relative to the pod/bridle attachment point.
-- `ned=true`:        if `true`, convert the orientation quaternion from NED to viewer convention.
+- `frame=KA`:        convention `state.orient` is given in. `KA` for a log written by
+  KiteUtils 0.13 or later, `KS` for an older one. The kite is drawn the same way round
+  either way; the keyword only says how to read the quaternion.
 - `wind=[:v_wind_200m, :v_wind_kite]`: list of wind fields to display in the status text.
   Supported symbols: `:v_wind_gnd`, `:v_wind_200m`, `:v_wind_kite`.
 """
-function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=true,
-                       wind=[:v_wind_200m, :v_wind_kite])
+function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0,
+                       frame::FrameConvention=KA, wind=[:v_wind_200m, :v_wind_kite])
     threepoint = length(state.Z) == kv.set.segments+1 # check if this is true
     fourpoint = length(state.Z) == kv.set.segments+5
     fourpoint_3l = length(state.Z) == kv.set.segments*3+6
@@ -375,11 +377,7 @@ function update_system(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0, ned=
     kv.markersizes[] = calc_markersizes(kv.set.segments)
     kv.rotation[]   = calc_rotations(kv.set.segments)
 
-    if ned
-        q0 = quat2viewer(state.orient)                        # SVector in the order w,x,y,z
-    else
-        q0 = state.orient                                     # SVector in the order w,x,y,z
-    end
+    q0 = quat2viewer(state.orient, frame)                 # SVector in the order w,x,y,z
     quat[]     = Quaternionf(q0[2], q0[3], q0[4], q0[1])  # the constructor expects the order x,y,z,w
     if fourpoint
         s = kv.set.segments
