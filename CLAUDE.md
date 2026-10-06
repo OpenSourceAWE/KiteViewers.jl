@@ -114,8 +114,9 @@ missing. `TestEnv` must be installed in the global environment.
 Same conventions as the sibling packages (see `KiteModels.jl`'s `CLAUDE.md`): 120-char line limit,
 named constants over magic numbers, space around binary operators, `Revise` installed globally and
 never as a project dependency. Markdown is linted with the `.markdownlint.json` in the repo root;
-JETLS settings live in `.JETLSConfig.toml`. Keep `CHANGELOG.md` current — new entries go under
-`## Unreleased` until the version in `Project.toml` is bumped.
+JETLS settings live in `.JETLSConfig.toml`. Pending changelog notes go in a file of their own,
+`changelog.d/<issue>-<slug>.md`, under `### Added`/`### Fixed`/`### Changed`; the release folds them
+into `CHANGELOG.md` under a `## KiteViewers vX.Y.Z YYYY-MM-DD` header.
 - Inline comments are ONLY allowed when stating a very non-obvious fact, and
   then keep them to 1 line at most. Give every type/function a docstring ("""
   not #) instead, but not too verbose, people won't reed it if your docstring is
