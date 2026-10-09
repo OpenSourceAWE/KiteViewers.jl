@@ -116,7 +116,7 @@ named constants over magic numbers, space around binary operators, `Revise` inst
 never as a project dependency. Markdown is linted with the `.markdownlint.json` in the repo root;
 JETLS settings live in `.JETLSConfig.toml`. Pending changelog notes go in a file of their own,
 `changelog.d/<issue>-<slug>.md`, under `### Added`/`### Fixed`/`### Changed`; the release folds them
-into `CHANGELOG.md` under a `## KiteViewers vX.Y.Z YYYY-MM-DD` header.
+into `CHANGELOG.md` under a `## KiteViewers vX.Y.Z DD-MM-YYYY` header.
 - Inline comments are ONLY allowed when stating a very non-obvious fact, and
   then keep them to 1 line at most. Give every type/function a docstring ("""
   not #) instead, but not too verbose, people won't reed it if your docstring is

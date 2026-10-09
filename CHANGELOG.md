@@ -1,6 +1,6 @@
 # Changelog
 
-## KiteViewers v0.6.0 2026-08-13
+## KiteViewers v0.6.0 13-08-2026
 ### Added
 - `bin/release`, posting release notes to GitHub issue #13 to trigger JuliaRegistrator; checks
   that both `Manifest-v1.11.toml` and `Manifest-v1.12.toml` match their `.default` counterparts
@@ -30,13 +30,13 @@
   Julia 1.11+ and GLMakie 0.12+; `install_examples()` installs MakieControlPlots too
 - `bin/run_julia` forwards its arguments to julia, with and without a system image
 
-## KiteViewers v0.5.2 2026-03-15
+## KiteViewers v0.5.2 15-03-2026
 ### Changed
 - fix startup artifact, zoom is now correct from the beginning
 - fix examples
 - update `install` script
 
-## KiteViewers v0.5.1 2026-03-01
+## KiteViewers v0.5.1 01-03-2026
 ### Changed
 - now tested on MacOS, adjusted text position and font for MacOS
 - fix JETLS warnings
@@ -45,7 +45,7 @@
 - function bring_viewer_to_front(); Mac only, does nothing otherwise
 - function reactivate_host_app();   Mac only, does nothing otherwise
 
-## KiteViewers v0.5.0 2026-02-12
+## KiteViewers v0.5.0 12-02-2026
 ### Changed
 - BREAKING: update KiteUtils to 1.11.2
 - use a workspace "examples" instead of TestEnv -> min Julia version now 1.11
@@ -58,23 +58,23 @@
 - add Manifest-v1.11.toml.default
 - add Manifest-v1.12.toml.default
 
-## KiteViewers v0.4.24 2025-06-01
+## KiteViewers v0.4.24 01-06-2025
 ### Changed
 - bump GLMakie to 0.11
 - bump GeometryBasic to 0.5
 
-## KiteViewers v0.4.23 2025-05-05
+## KiteViewers v0.4.23 05-05-2025
 ### Changed
 - bumped KiteUtils to `1.10.5`
 - bumped KiteModels to `0.7.3`
 - adapted the code to be able to process the new arrays in SysState
 
-## KiteViewers v0.4.22 2025-04-20
+## KiteViewers v0.4.22 20-04-2025
 ### Changed
 - update KiteUtils to `1.10.2`
 - removed example `basic_4p_3lines.jl`
 
-## KiteViewers v0.4.21 2024-11-17
+## KiteViewers v0.4.21 17-11-2024
 ### Fixed
 - fix display of kite in `KPS_3L` model
 - make `menu()` work
@@ -83,7 +83,7 @@
 - automatically execute `using KiteViewers` when starting Julia with `./bin/run_julia`
 - improved the script `bin/install`
 
-## KiteViewers v0.4.20 2024-11-09
+## KiteViewers v0.4.20 09-11-2024
 ### Fixed
 - fix display of kite in one point model
 - fix function `save_png(viewer)`; it uses the folder `video` as output now
@@ -97,18 +97,18 @@
 - add function `install_examples()`
 - add example `reelout_1p.jl`
 
-## KiteViewers v0.4.19 2024-10-20
+## KiteViewers v0.4.19 20-10-2024
 ### Changed
 - bump KiteUtils to 0.8.2
 - add param `ned=true` to function `update_system()`; with this parameter
   the orientation is automatically converted from **NED** to **viewer** reference frame
 - fix the example `basic_4p.jl`
 
-## KiteViewers v0.4.18 2024-10-16
+## KiteViewers v0.4.18 16-10-2024
 ### Changed
 - bump KiteUtils to 0.8
 
-## KiteViewers v0.4.17 2024-08-25
+## KiteViewers v0.4.17 25-08-2024
 ### Changed
 - replaced Plots with ControlPlots in Project.toml and the examples
 - deleted obsolete files, e.g. plots.jl
@@ -120,40 +120,40 @@
 ### Fixed
 - fix tests
 
-## KiteViewers v0.4.16 2024-07-28
+## KiteViewers v0.4.16 28-07-2024
 ### Fixed
 - bugfix in function clear_viewer(), rename parameter `stop` to `stop_`
 
-## KiteViewers v0.4.15 2024-07-28
+## KiteViewers v0.4.15 28-07-2024
 ### Changed
 - add optional, boolean parameter `stop` to the function clear_viewer()
 - update KiteUtils to 0.7
 - add example show_messages.jl that receives html messages
 - fix the older examples
 
-## KiteViewers v0.4.14 2024-07-15
+## KiteViewers v0.4.14 15-07-2024
 ### Changed
 - upgrade to GLMakie 0.10
 - improve example reelout.jl
 
-## KiteViewers v0.4.13 2024-07-08
+## KiteViewers v0.4.13 08-07-2024
 ### Changed
 - fix pre-compilation on Ubuntu 24.04
 - replace `test_sterring.jl` with `test_parking.jl`
 - fix tests
 - smaller font size on Windows
 
-## KiteViewers v0.4.12 2024-04-30
+## KiteViewers v0.4.12 30-04-2024
 ### Added
 - add menu_project for loading, saving and editing projects
 
-## KiteViewers v0.4.11 2024-04-05
+## KiteViewers v0.4.11 05-04-2024
 ### Added
 - add menu time_lapse for changing the simulation/ replay speed
 - add field `mod_text` to Viewer3D; it defines the quotient of the update rate and the text update rate
 - add textbox `t_sim` to enter the simulation time
 
-## KiteViewers v0.4.10 2024-03-30
+## KiteViewers v0.4.10 30-03-2024
 ### Fixed
 - fixed bug that caused problems with displaying tethers with more than 6 segments
 
