@@ -35,7 +35,7 @@ fi
 
 # Check that the checked-in default manifests match the active ones, so a fresh
 # install (which copies the .default over) resolves to exactly what was tested
-for MANIFEST in "Manifest-v1.11.toml" "Manifest-v1.12.toml"; do
+for MANIFEST in "Manifest-v1.12.toml" "Manifest-v1.13.toml"; do
     MANIFEST_DEFAULT="${MANIFEST}.default"
     if [ ! -f "$MANIFEST" ] || [ ! -f "$MANIFEST_DEFAULT" ]; then
         echo "Error: $MANIFEST and/or $MANIFEST_DEFAULT not found." >&2

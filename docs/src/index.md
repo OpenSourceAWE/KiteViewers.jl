@@ -19,7 +19,7 @@ sufficient. When you have KiteSimulators installed, please replace any statement
 
 ## Installation
 
-Download and install [Julia 1.11](https://ufechner7.github.io/2024/08/09/installing-julia-with-juliaup.html)
+Download and install [Julia 1.12 or 1.13](https://ufechner7.github.io/2024/08/09/installing-julia-with-juliaup.html)
 or later, if you haven't already. 
 
 If you don't have a project yet, create one with:

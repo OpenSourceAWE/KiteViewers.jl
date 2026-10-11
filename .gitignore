@@ -8,6 +8,8 @@ performance.png
 Manifest-v1.11.toml
 examples/Manifest-v1.12.toml
 Manifest-v1.12.toml
+examples/Manifest-v1.13.toml
+Manifest-v1.13.toml
 docs/Manifest.toml
 docs/build
 data/tmp_sinus.arrow
