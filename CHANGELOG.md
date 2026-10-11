@@ -2,7 +2,16 @@
 
 ## Unreleased
 ### Changed
-- support Julia 1.12 and 1.13 only: `julia` compat `"1.12, 1.13"`, `Manifest-v1.11.toml.default`
+- BREAKING: `update_system` takes `frame::FrameConvention=KA` in place of `ned`. It says
+  which convention `state.orient` is in: `KA` for a log written by KiteUtils 0.13 or
+  later, `KS` for an older one. The kite is drawn the same way round either way.
+  `ned=false` meant "already in the viewer convention" and has no successor; the demo
+  states it was used with now store `KA`, so those calls just drop the keyword.
+- compat bound on KiteUtils raised to `0.13`.
+- requires KiteModels 0.12 (for the tests and examples), which writes `KA` orientations to
+  `SysState`
+- support Julia 1.12 and 1.13 only, as KiteUtils 0.13 and the WinchModels and AtmosphericModels
+  releases that accept it do: `julia` compat `"1.12, 1.13"`, `Manifest-v1.11.toml.default`
   is removed and `Manifest-v1.13.toml.default` added, `bin/install` offers Julia 1.12 and 1.13
   (the default is 1.13 if it is the active juliaup channel), `bin/release` checks the manifests
   of Julia 1.12 and 1.13, and the README and the docs no longer mention Julia 1.11

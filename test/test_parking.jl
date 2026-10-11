@@ -22,7 +22,10 @@ STATISTIC = false
 SHOW_KITE = false
 # end of user parameter section #
 
-viewer::Viewer3D = Viewer3D(SHOW_KITE)
+# The viewer state (quat, textnode, ...) is module-global, so all test files share one Viewer3D
+if !@isdefined(viewer)
+    viewer::Viewer3D = Viewer3D(SHOW_KITE)
+end
 
 function update_system2(kps)
     sys_state = SysState(kps)
