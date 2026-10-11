@@ -11,8 +11,10 @@
 - requires KiteModels 0.12 (for the tests and examples), which writes `KA` orientations to
   `SysState`
 - support Julia 1.12 and 1.13 only, as KiteUtils 0.13 and the WinchModels and AtmosphericModels
-  releases that accept it do: `julia` compat `"1.12, 1.13"`, `Manifest-v1.11.toml.default` is
-  removed, and `bin/release` only checks `Manifest-v1.12.toml`
+  releases that accept it do: `julia` compat `"1.12, 1.13"`, `Manifest-v1.11.toml.default`
+  is removed and `Manifest-v1.13.toml.default` added, `bin/install` offers Julia 1.12 and 1.13
+  (the default is 1.13 if it is the active juliaup channel), `bin/release` checks the manifests
+  of Julia 1.12 and 1.13, and the README and the docs no longer mention Julia 1.11
 
 ## KiteViewers v0.6.0 - 2026-08-13
 ### Added
