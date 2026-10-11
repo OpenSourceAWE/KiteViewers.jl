@@ -38,7 +38,7 @@ if ! command -v julia &> /dev/null; then
     echo "Error: julia is not installed. Please install juliaup first."
     case "$(uname -s)" in
         Linux|Darwin)
-            echo "  curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.11"
+            echo "  curl -fsSL https://install.julialang.org | sh -s -- --default-channel 1.12"
             ;;
         MINGW*|MSYS*|CYGWIN*)
             echo "  winget install --name Julia --id 9NJNWW8PVKMN -e -s msstore"
@@ -74,23 +74,23 @@ if [[ $assume_yes == false ]]; then
         echo "Run 'bin/install -y' to install with the julia already on PATH."
         exit 1
     fi
-    if juliaup status 2>/dev/null | grep '^\s*\*' | grep -q '1\.12'; then
+    if juliaup status 2>/dev/null | grep '^\s*\*' | grep -q '1\.13'; then
         _default_choice=2
-        _default_julia="1.12"
+        _default_julia="1.13"
     else
         _default_choice=1
-        _default_julia="1.11"
+        _default_julia="1.12"
     fi
     echo "Which Julia version do you want to use?"
-    echo "  1) Julia 1.11"
-    echo "  2) Julia 1.12"
+    echo "  1) Julia 1.12"
+    echo "  2) Julia 1.13"
     read -rp "Enter 1 or 2 [default: ${_default_choice}]: " _julia_choice
     case "${_julia_choice}" in
         1)
-            _desired_julia="1.11"
+            _desired_julia="1.12"
             ;;
         2)
-            _desired_julia="1.12"
+            _desired_julia="1.13"
             ;;
         "")
             _desired_julia="${_default_julia}"
@@ -159,10 +159,10 @@ if test -f "$SOFILE"; then
     rm -f "$SOFILE"
 fi
 
-# Only accept Julia 1.11 and 1.12
-if [[ $julia_major != "1.11" ]] && [[ $julia_major != "1.12" ]]; then
-    echo "Error: Julia $julia_major is not supported. Only Julia 1.11 and 1.12 are supported."
-    echo "Install it with 'juliaup add 1.11' and pick it from the menu of bin/install."
+# Only accept Julia 1.12 and 1.13
+if [[ $julia_major != "1.12" ]] && [[ $julia_major != "1.13" ]]; then
+    echo "Error: Julia $julia_major is not supported. Only Julia 1.12 and 1.13 are supported."
+    echo "Install it with 'juliaup add 1.12' and pick it from the menu of bin/install."
     exit 1
 fi
 

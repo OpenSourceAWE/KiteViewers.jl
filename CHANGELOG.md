@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+### Changed
+- support Julia 1.12 and 1.13 only: `julia` compat `"1.12, 1.13"`, `Manifest-v1.11.toml.default`
+  is removed and `Manifest-v1.13.toml.default` added, `bin/install` offers Julia 1.12 and 1.13
+  (the default is 1.13 if it is the active juliaup channel), `bin/release` checks the manifests
+  of Julia 1.12 and 1.13, and the README and the docs no longer mention Julia 1.11
+
 ## KiteViewers v0.6.0 - 2026-08-13
 ### Added
 - `bin/release`, posting release notes to GitHub issue #13 to trigger JuliaRegistrator; checks
