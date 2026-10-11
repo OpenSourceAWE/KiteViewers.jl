@@ -77,13 +77,14 @@ Holds the Makie figure, 3D scene, camera, screen, particle/tether geometry obser
 settings, UI buttons, optional menus, and simulation bookkeeping (step counter, energy,
 stop flag, etc.).
 
-The `seg_topology`/`wing_*`/`point_positions` fields are `nothing` until [`init_segments`](@ref) sets up
+The `seg_topology`/`wing_*`/`point_*` fields are `nothing` until [`init_segments`](@ref) sets up
 rendering of an arbitrary point/segment topology (used for the V3 kite); `positions`/
 `markersizes`/`rotation` are then reused (resized) for the tether+bridle layer, the `wing_*`
 triple backs a second, black-colored layer for the wing segments, and `point_positions` backs a
 third layer of small spheres sized for a dense point cloud — the built-in `part_positions` sphere
 marker is sized for the sparse legacy topologies and is too large not to overlap into a solid
-blob on a 44-point kite.
+blob on a 44-point kite. `wing_plot` and `point_plot` are the plots of these two layers, so that
+a further call of `init_segments` can remove them.
 
 Use the outer constructors [`Viewer3D(show_kite, autolabel; precompile)`](@ref) or
 [`Viewer3D(set, show_kite, autolabel; precompile, menus)`](@ref) to create an instance.
@@ -123,6 +124,8 @@ mutable struct Viewer3D <: AKV
     wing_markersizes::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
     wing_rotation::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
     point_positions::Union{Nothing, Observable{Vector{GeometryBasics.Point{3, Float32}}}}
+    wing_plot::Union{Nothing, GLMakie.Makie.AbstractPlot}
+    point_plot::Union{Nothing, GLMakie.Makie.AbstractPlot}
 end
 
 """
@@ -183,6 +186,22 @@ function set_status(kv::AKV, status_text)
         last_status = status[]
     end
     status[] = status_text
+end
+
+"""
+    set_title!(kv::Viewer3D, title)
+
+Set the title of the viewer window to `title`, for example the name of the test that is shown.
+The title is also stored in GLMakie's screen defaults, as GLMakie reapplies them when it
+reconfigures the window, e.g. in [`save_png`](@ref), which would reset the title to "Makie".
+The window title is not changed if the window is closed.
+"""
+function set_title!(kv::Viewer3D, title)
+    GLMakie.activate!(title=String(title))
+    if isopen(kv.screen)
+        GLMakie.set_title!(kv.screen, String(title))
+    end
+    nothing
 end
 
 """
@@ -376,7 +395,7 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
     s = Viewer3D(fig, scene3D, cam, gl_screen, points, pos, part_pos, markersizes,
                  rotation, set, btn_RESET, btn_ZOOM_in, btn_ZOOM_out,
                  btn_PLAY_PAUSE, btn_AUTO, btn_PARKING, btn_STOP, menu1, menu2, menu3, menu4, tb, btn_OK,
-                 sw, 0, mod_text, 0, show_kite, false, nothing, nothing, nothing, nothing, nothing)
+                 sw, 0, mod_text, 0, show_kite, false, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
     txt2 = init_system(s, s.scene3D; show_kite=show_kite)
 
     camera = cameracontrols(s.scene3D.scene)

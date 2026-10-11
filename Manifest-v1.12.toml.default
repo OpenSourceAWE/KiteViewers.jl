@@ -2,7 +2,7 @@
 
 julia_version = "1.12.7"
 manifest_format = "2.0"
-project_hash = "46b0580e082967ed985a1b9c305dc98078f9151d"
+project_hash = "174bd35d1b4f4e01ac5cb1b1dfa82433af791fb0"
 
 [[deps.ADTypes]]
 deps = ["PrecompileTools"]
@@ -1306,7 +1306,7 @@ version = "0.13.2"
 deps = ["FileIO", "GLMakie", "GeometryBasics", "Joysticks", "KiteUtils", "LinearAlgebra", "Parameters", "Pkg", "PrecompileTools", "Printf", "Reexport", "Rotations", "StaticArrays", "StructArrays", "Timers"]
 path = "."
 uuid = "2e593061-95e7-45e4-95f4-df0491f2e601"
-version = "0.6.0"
+version = "0.7.0"
 
 [[deps.Krylov]]
 deps = ["LinearAlgebra", "Printf", "SparseArrays"]
