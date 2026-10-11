@@ -23,6 +23,7 @@ KiteViewers.save_png
 KiteViewers.stop
 KiteViewers.pause
 KiteViewers.set_status
+KiteViewers.set_title!
 KiteViewers.copy_examples
 ```
 

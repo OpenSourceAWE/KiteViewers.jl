@@ -12,8 +12,8 @@ using Pkg
 
 export AKV, AbstractKiteViewer, Viewer3D                               # types
 export SegmentType, TETHER, BRIDLE, WING                               # segment topology types
-export clear_viewer, pause, save_png, set_status, stop, update_system  # functions
-export update_status_text!                                             # shared status text
+export clear_viewer, pause, save_png, set_status, set_title!, stop     # functions
+export update_system, update_status_text!                              # kite power system and status text
 export init_segments, load_segments, update_segments!                  # arbitrary point/segment topology
 export bring_viewer_to_front, reactivate_host_app
 @reexport using GLMakie: on
@@ -30,11 +30,11 @@ function default_viewer_font(set)
         else
             font = "/usr/share/fonts/truetype/freefont/FreeMono.ttf"
         end
-    elseif Sys.isapple()
+    elseif Sys.isapple() # COV_EXCL_START: CI runs on Linux only
         font = "Menlo Bold"
     else
         font = "Courier New"
-    end
+    end                  # COV_EXCL_STOP
     if set.fixed_font != ""
         font = set.fixed_font
     end
@@ -81,14 +81,14 @@ function install_examples(add_packages=true)
     copy_examples()
     copy_settings()
     copy_viewer_settings()
-    if add_packages
+    if add_packages # COV_EXCL_START: would change the test environment
         Pkg.add("KiteUtils")
         Pkg.add("KiteModels")
         Pkg.add("MakieControlPlots")
         Pkg.add("LaTeXStrings")
         Pkg.add("StatsBase")
         Pkg.add("Timers")
-    end
+    end             # COV_EXCL_STOP
 end
 
 function copy_files(relpath, files)
@@ -105,6 +105,7 @@ end
 
 function reactivate_host_app()
     Sys.isapple() || return nothing
+    # COV_EXCL_START: CI runs on Linux only
     term = get(ENV, "TERM_PROGRAM", "")
     cmd = if term == "vscode"
         `osascript -e 'tell application "Visual Studio Code" to activate'`
@@ -122,17 +123,18 @@ function reactivate_host_app()
         end
     end
     nothing
+    # COV_EXCL_STOP
 end
 
 function bring_viewer_to_front()
-    if Sys.isapple()
+    if Sys.isapple() # COV_EXCL_START: CI runs on Linux only
         sleep(0.2)
         try
             script = "tell application \"System Events\" to set frontmost of first process whose unix id is $(getpid()) to true"
             run(pipeline(`osascript -e $script`, stdout=devnull, stderr=devnull))
         catch
         end
-    end
+    end              # COV_EXCL_STOP
     nothing
 end
 

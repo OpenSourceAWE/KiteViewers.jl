@@ -95,13 +95,19 @@ segments; wing segments get a new black layer. The built-in point-sphere layer (
 is hidden and replaced by a new layer with a much smaller marker, sized for a dense point cloud —
 except on the points of the main tether, which keep a bead twice their cylinder's radius so its
 segmentation stays readable. Call [`update_segments!`](@ref) every frame afterwards to move the
-points.
+points. Calling `init_segments` again replaces the topology; the layers of the earlier call are
+removed.
 """
 function init_segments(kv::AKV, segments::AbstractMatrix{<:Integer})
     n_points = maximum(@view segments[:, 1:2])
     is_wing = segments[:, 3] .== Int(WING)
     n_tb = count(!, is_wing)
     n_wing = count(is_wing)
+
+    # remove the wing and point layers of an earlier call
+    for plot in (kv.wing_plot, kv.point_plot)
+        isnothing(plot) || delete!(kv.scene3D.scene, plot)
+    end
 
     kv.seg_topology = Matrix{Int64}(segments)
     kv.points = Vector{Point3f}(undef, n_points)
@@ -116,7 +122,8 @@ function init_segments(kv::AKV, segments::AbstractMatrix{<:Integer})
     wing_mrk = Observable([Point3f(WING_RADIUS, WING_RADIUS, 1) for _ in 1:n_wing])
     wing_rot = Observable([Point3f(1, 0, 0) for _ in 1:n_wing])
     cyl = Cylinder(Point3f(0, 0, -0.5), Point3f(0, 0, 0.5), Float32(0.035 * SCALE))
-    meshscatter!(kv.scene3D, wing_pos, marker=cyl, rotation=wing_rot, markersize=wing_mrk, color=:black)
+    kv.wing_plot = meshscatter!(kv.scene3D, wing_pos, marker=cyl, rotation=wing_rot, markersize=wing_mrk,
+                                color=:black)
     kv.wing_positions   = wing_pos
     kv.wing_markersizes = wing_mrk
     kv.wing_rotation    = wing_rot
@@ -125,7 +132,7 @@ function init_segments(kv::AKV, segments::AbstractMatrix{<:Integer})
     sphere = Sphere(Point3f(0, 0, 0), POINT_RADIUS)
     point_size = ones(Float32, n_points)
     point_size[unique(segments[segments[:, 3] .== Int(TETHER), 1:2])] .= TETHER_POINT_RADIUS / POINT_RADIUS
-    meshscatter!(kv.scene3D, point_pos, marker=sphere, markersize=point_size, color=:yellow)
+    kv.point_plot = meshscatter!(kv.scene3D, point_pos, marker=sphere, markersize=point_size, color=:yellow)
     kv.point_positions = point_pos
     kv
 end
