@@ -8,6 +8,11 @@
   `ned=false` meant "already in the viewer convention" and has no successor; the demo
   states it was used with now store `KA`, so those calls just drop the keyword.
 - compat bound on KiteUtils raised to `0.13`.
+- requires KiteModels 0.12 (for the tests and examples), which writes `KA` orientations to
+  `SysState`
+- support Julia 1.12 and 1.13 only, as KiteUtils 0.13 and the WinchModels and AtmosphericModels
+  releases that accept it do: `julia` compat `"1.12, 1.13"`, `Manifest-v1.11.toml.default` is
+  removed, and `bin/release` only checks `Manifest-v1.12.toml`
 
 ## KiteViewers v0.6.0 - 2026-08-13
 ### Added
