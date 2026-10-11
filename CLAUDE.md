@@ -86,9 +86,9 @@ Workspace-based: `Project.toml` declares `[workspace] projects = ["examples", "d
 target, and the test scripts activate it themselves with `TestEnv.activate()` when `KiteModels` is
 missing. `TestEnv` must be installed in the global environment.
 
-- **Install/setup**: `cd bin && ./install` (juliaup; asks for Julia 1.11 or 1.12, copies the matching
+- **Install/setup**: `cd bin && ./install` (juliaup; asks for Julia 1.12 or 1.13, copies the matching
   `Manifest-v1.xx.toml.default`, then resolves/instantiates the main, examples and docs projects).
-  The `Manifest-v1.11.toml`/`Manifest-v1.12.toml` files are gitignored; only the `.default` ones are
+  The `Manifest-v1.12.toml`/`Manifest-v1.13.toml` files are gitignored; only the `.default` ones are
   tracked. Regenerate a default with `examples/update_manifest.jl` and commit it.
 - **Launch a dev REPL**: `./bin/run_julia` (aliased to `jl` by the installer). It sets `NO_MTK=true`,
   picks GC/compute threads, and starts with `using KiteViewers`; it also picks up a
