@@ -44,7 +44,7 @@ end
 const TETHER_RADIUS = 0.5f0 # relative to the tether cylinder of `init_system`
 const BRIDLE_RADIUS = 0.3f0
 const WING_RADIUS = 0.3f0
-const POINT_RADIUS = 0.015f0 # in scene units; `init_system`'s spheres blur dense points
+const POINT_RADIUS = 0.015f0 # in scene units
 const TETHER_POINT_RADIUS = Float32(0.045 * SCALE) # bead on the tether points
 
 """
@@ -87,7 +87,8 @@ end
     init_segments(kv::AKV, definition::SystemDefinition)
 
 Set up `kv` to draw the points and segments of `definition` instead of the built-in
-one-point/four-point/three-line kite models; [`update_segments!`](@ref) then moves them.
+one-point/four-point/three-line kite models; the segments have zero size until
+[`update_segments!`](@ref) places them.
 Tether and bridle segments go on the yellow tether layer, wing segments on a black one, and
 the points on small spheres in place of `kv.part_positions`, larger on the tether. A
 further call replaces the layers of the one before.
@@ -103,11 +104,14 @@ function init_segments(kv::AKV, definition::SystemDefinition)
     kv.definition = definition
     kv.points = Vector{Point3f}(undef, n_points)
     kv.part_positions[] = Point3f[]
-    kv.positions[], kv.markersizes[], kv.rotation[] =
-        (fill(Point3f(1, 0, 0), length(kinds) - n_wing) for _ in 1:3)
+    n_drawn = length(kinds) - n_wing
+    kv.positions[] = zeros(Point3f, n_drawn)
+    kv.markersizes[] = zeros(Point3f, n_drawn)
+    kv.rotation[] = fill(Point3f(1, 0, 0), n_drawn)
 
-    kv.wing_positions, kv.wing_markersizes, kv.wing_rotation =
-        (Observable(fill(Point3f(1, 0, 0), n_wing)) for _ in 1:3)
+    kv.wing_positions = Observable(zeros(Point3f, n_wing))
+    kv.wing_markersizes = Observable(zeros(Point3f, n_wing))
+    kv.wing_rotation = Observable(fill(Point3f(1, 0, 0), n_wing))
     cyl = Cylinder(Point3f(0, 0, -0.5), Point3f(0, 0, 0.5), Float32(0.035 * SCALE))
     kv.wing_plot = meshscatter!(kv.scene3D, kv.wing_positions, marker=cyl,
                                 rotation=kv.wing_rotation, markersize=kv.wing_markersizes,

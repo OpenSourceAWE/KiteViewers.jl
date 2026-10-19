@@ -161,11 +161,14 @@ const VIEWER_DATA = joinpath(dirname(@__DIR__), "data")
     scale = 0.08
     unscaled(i) = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
     midpoint(segment) = (unscaled(segment.points[1]) + unscaled(segment.points[2])) / 2
-    is_wing(segment) = all(in(2:21), segment.points)
-    tether = definition.segments[definition.tethers[1].segments]
-    wing = filter(is_wing, definition.segments)
-    tether_and_bridle = filter(!is_wing, definition.segments)
-    @test (length(tether), length(wing), length(tether_and_bridle)) == (6, 46, 49)
+    kinds = KiteViewers.segment_kinds(definition)
+    @test [count(==(kind), kinds) for kind in (:tether, :wing, :bridle)] == [6, 46, 43]
+    @test findall(==(:tether), kinds) == definition.tethers[1].segments
+    @test all(all(in(2:21), segment.points) == (kind == :wing)
+              for (segment, kind) in zip(definition.segments, kinds))
+    tether = definition.segments[kinds .== :tether]
+    wing = definition.segments[kinds .== :wing]
+    tether_and_bridle = definition.segments[kinds .!= :wing]
 
     update_segments!(viewer_menus, state; scale)
     @test viewer_menus.points ≈ unscaled.(1:44)
