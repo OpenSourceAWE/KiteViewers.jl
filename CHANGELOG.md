@@ -1,6 +1,15 @@
 # Changelog
 
-## Unreleased
+## KiteViewers v0.7.0 - 2026-10-11
+### Added
+- function `set_title!(kv::Viewer3D, title)`, setting the title of the viewer window; the tests use
+  it to show the name of the running test set in the window title
+- test `test/test_frames.jl`, checking for five attitudes that a `KS` orientation passed with
+  `frame=KS` is drawn the same way round as the equivalent `KA` one
+- test `test/test_viewer.jl`, covering the three-line kite, the status text, the buttons,
+  `pause`, `clear_viewer`, `save_png`, `install_examples`, the viewer with menus and the
+  segment topology API; the code coverage rises from 49% to about 99%
+
 ### Changed
 - BREAKING: `update_system` takes `frame::FrameConvention=KA` in place of `ned`. It says
   which convention `state.orient` is in: `KA` for a log written by KiteUtils 0.13 or
@@ -8,6 +17,33 @@
   `ned=false` meant "already in the viewer convention" and has no successor; the demo
   states it was used with now store `KA`, so those calls just drop the keyword.
 - compat bound on KiteUtils raised to `0.13`.
+- requires KiteModels 0.12 (for the tests and examples), which writes `KA` orientations to
+  `SysState`
+- support Julia 1.12 and 1.13 only, as KiteUtils 0.13 and the WinchModels and AtmosphericModels
+  releases that accept it do: `julia` compat `"1.12, 1.13"`, `Manifest-v1.11.toml.default`
+  is removed and `Manifest-v1.13.toml.default` added, `bin/install` offers Julia 1.12 and 1.13
+  (the default is 1.13 if it is the active juliaup channel), `bin/release` checks the manifests
+  of Julia 1.12 and 1.13, and the README and the docs no longer mention Julia 1.11
+- `bin/install` takes the options `-y`/`--yes` (no Julia version menu, use the `julia` on the
+  `PATH`), `-u`/`--update` (update the live manifests, leaving the `.default` files untouched)
+  and `-h`/`--help`. It now calls the chosen Julia as `julia +<channel>` instead of running
+  `juliaup default`, no longer appends an alias to `~/.bashrc`, and no longer deletes all
+  manifests and re-resolves when a resolve fails
+- the package diagram in the docs is updated from KiteUtils.jl
+- the tests have their own `test/Project.toml` (a workspace project) instead of the
+  `[extras]`/`[targets]` test target, and every test script activates it, so
+  `include("test/runtests.jl")` works in a plain REPL; `TestEnv` is no longer needed. CI runs
+  `julia --project=test test/runtests.jl`
+
+### Fixed
+- `examples/park_v3.jl` declares `dt::Float64`, as the other examples do. When run from the
+  menu, its untyped global `dt` made every later example fail with
+  `cannot set type for global Main.dt`
+- `bin/install -y` printed the Julia version menu and exited with status 1
+- calling `init_segments` a second time on the same viewer kept the wing and point layers of the
+  first call on screen; they are now removed
+- `include("test/runtests.jl")` from the repo root changed the working directory to the parent
+  folder of the repo
 
 ## KiteViewers v0.6.0 - 2026-08-13
 ### Added

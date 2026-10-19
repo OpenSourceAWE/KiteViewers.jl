@@ -16,5 +16,5 @@ cd KiteViewers.jl
 cd bin
 ./install
 cd ..
-julia --project -e "using KiteViewers; using TestEnv; TestEnv.activate(); using KiteModels"
+julia --project=test -e "using Pkg; Pkg.instantiate(); using KiteViewers, KiteModels"
 echo "KiteViewers installed successfully!"

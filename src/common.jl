@@ -51,11 +51,12 @@ const TETHER_POINT_RADIUS = Float32(0.045 * SCALE) # bead on the tether points
     segment_kinds(definition::SystemDefinition) -> Vector{Symbol}
 
 How each segment of `definition` is drawn: `:tether` for a segment of one of its `tethers`,
-`:wing` for one joining two points of its stations or canopy faces, `:bridle` otherwise.
+`:wing` for one joining two points of its spanwise stations or canopy faces, `:bridle`
+otherwise.
 """
 function segment_kinds(definition::SystemDefinition)
     tether = Set(i for tether in definition.tethers for i in tether.segments)
-    wing_points = Set(i for block in (definition.stations, definition.canopy_faces)
+    wing_points = Set(i for block in (definition.spanwise_stations, definition.canopy_faces)
                       for component in block for i in component.points)
     return [i in tether ? :tether : all(in(wing_points), segment.points) ? :wing : :bridle
             for (i, segment) in enumerate(definition.segments)]
@@ -88,13 +89,17 @@ end
 Set up `kv` to draw the points and segments of `definition` instead of the built-in
 one-point/four-point/three-line kite models; [`update_segments!`](@ref) then moves them.
 Tether and bridle segments go on the yellow tether layer, wing segments on a black one, and
-the points on small spheres in place of `kv.part_positions`, larger on the tether.
+the points on small spheres in place of `kv.part_positions`, larger on the tether. A
+further call replaces the layers of the one before.
 """
 function init_segments(kv::AKV, definition::SystemDefinition)
     kinds = segment_kinds(definition)
     n_points = length(definition.points)
     n_wing = count(==(:wing), kinds)
 
+    for plot in (kv.wing_plot, kv.point_plot)
+        isnothing(plot) || delete!(kv.scene3D.scene, plot)
+    end
     kv.definition = definition
     kv.points = Vector{Point3f}(undef, n_points)
     kv.part_positions[] = Point3f[]
@@ -104,16 +109,17 @@ function init_segments(kv::AKV, definition::SystemDefinition)
     kv.wing_positions, kv.wing_markersizes, kv.wing_rotation =
         (Observable(fill(Point3f(1, 0, 0), n_wing)) for _ in 1:3)
     cyl = Cylinder(Point3f(0, 0, -0.5), Point3f(0, 0, 0.5), Float32(0.035 * SCALE))
-    meshscatter!(kv.scene3D, kv.wing_positions, marker=cyl, rotation=kv.wing_rotation,
-                 markersize=kv.wing_markersizes, color=:black)
+    kv.wing_plot = meshscatter!(kv.scene3D, kv.wing_positions, marker=cyl,
+                                rotation=kv.wing_rotation, markersize=kv.wing_markersizes,
+                                color=:black)
 
     kv.point_positions = Observable(fill(Point3f(0, 0, 0), n_points))
     point_size = ones(Float32, n_points)
     tether_points = segment_points(definition, kinds .== :tether)
     point_size[tether_points] .= TETHER_POINT_RADIUS / POINT_RADIUS
     sphere = Sphere(Point3f(0, 0, 0), POINT_RADIUS)
-    meshscatter!(kv.scene3D, kv.point_positions, marker=sphere, markersize=point_size,
-                 color=:yellow)
+    kv.point_plot = meshscatter!(kv.scene3D, kv.point_positions, marker=sphere,
+                                 markersize=point_size, color=:yellow)
     kv
 end
 

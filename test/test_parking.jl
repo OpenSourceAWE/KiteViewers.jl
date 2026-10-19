@@ -1,6 +1,7 @@
+# activate the test environment if needed
 using Pkg
-if ! ("KiteModels" ∈ keys(Pkg.project().dependencies))
-    using TestEnv; TestEnv.activate()
+if dirname(Pkg.project().path) != @__DIR__
+    Pkg.activate(@__DIR__)
 end
 
 using KiteViewers, KiteModels, KitePodModels, Rotations, Timers
@@ -22,7 +23,11 @@ STATISTIC = false
 SHOW_KITE = false
 # end of user parameter section #
 
-viewer::Viewer3D = Viewer3D(SHOW_KITE)
+# The viewer state (quat, textnode, ...) is module-global, so all test files share one Viewer3D
+if !@isdefined(viewer) || !isopen(viewer.screen)
+    viewer::Viewer3D = Viewer3D(SHOW_KITE)
+end
+set_title!(viewer, "test_parking.jl: 20 s KPS4 simulation")
 
 function update_system2(kps)
     sys_state = SysState(kps)

@@ -10,7 +10,7 @@ TIME_LAPSE_RATIO = 1 # 1 = real time; N = N times faster, drawing every N-th log
 
 definition = load_structure(joinpath(get_data_path(), "v3_structure.yml"))
 log = load_log("tmp_parking")
-dt = log.syslog[2].time - log.syslog[1].time
+dt::Float64 = log.syslog[2].time - log.syslog[1].time
 
 viewer::Viewer3D = Viewer3D(false)
 init_segments(viewer, definition)

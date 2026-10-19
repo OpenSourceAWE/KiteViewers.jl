@@ -84,21 +84,21 @@ structure document that `examples/park_v3.jl` draws it from.
 ## Development commands
 
 Workspace-based: `Project.toml` declares `[workspace] projects = ["examples", "docs", "test"]`, but
-**there is no `test/Project.toml`** — tests run through the classic `[extras]`/`[targets]` test
-target, and the test scripts activate it themselves with `TestEnv.activate()` when `KiteModels` is
-missing. `TestEnv` must be installed in the global environment.
+all four projects share one manifest. The tests have their own `test/Project.toml`; every test
+script activates it at the top (`Pkg.activate(@__DIR__)` unless it is already active), so a single
+test file can be included on its own.
 
-- **Install/setup**: `cd bin && ./install` (juliaup; asks for Julia 1.11 or 1.12, copies the matching
+- **Install/setup**: `cd bin && ./install` (juliaup; asks for Julia 1.12 or 1.13, copies the matching
   `Manifest-v1.xx.toml.default`, then resolves/instantiates the main, examples and docs projects).
-  The `Manifest-v1.11.toml`/`Manifest-v1.12.toml` files are gitignored; only the `.default` ones are
+  The `Manifest-v1.12.toml`/`Manifest-v1.13.toml` files are gitignored; only the `.default` ones are
   tracked. Regenerate a default with `examples/update_manifest.jl` and commit it.
 - **Launch a dev REPL**: `./bin/run_julia` (aliased to `jl` by the installer). It sets `NO_MTK=true`,
   picks GC/compute threads, and starts with `using KiteViewers`; it also picks up a
   `bin/kps-image-<version>-<branch>.so` system image if one was built.
-- **Run the tests**: `julia --project -e 'using TestEnv; TestEnv.activate(); include("test/runtests.jl")'`
-  (what CI does, under `xvfb-run` with `DISPLAY=:0`). Do **not** `include("test/runtests.jl")` in a
-  shared REPL: the script calls `cd("..")` at top level (it assumes `Pkg.test`'s working directory
-  `test/`) and will move the REPL out of the repo. `test/runtests.jl` includes `test_parking.jl` —
+- **Run the tests**: `include("test/runtests.jl")` from the repo root, or one file such as
+  `include("test/test_viewer.jl")`; `Pkg.test()` works too. CI runs
+  `julia --project=test test/runtests.jl` under `xvfb-run` with `DISPLAY=:0`. `test/runtests.jl`
+  only changes to the repo root if it is started in `test/`. `test/runtests.jl` includes `test_parking.jl` —
   a real 20 s `KPS4` simulation driving the viewer — and then asserts elevation, azimuth and winch
   force on its final state; `test_steering.jl` is a second, longer scenario that the runner does not
   include. `test/test_dev` and `test/test_main_branch` are shell scripts that install the package
