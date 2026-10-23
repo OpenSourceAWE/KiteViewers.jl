@@ -206,7 +206,7 @@ end
 
 """
     Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false, menus=false, px_per_unit=2.0,
-             fxaa=true, new_window=false)
+             fxaa=true, text_fxaa=false, new_window=false)
 
 Convenience constructor that loads settings via `se()` and forwards to the full constructor.
 
@@ -222,17 +222,18 @@ Convenience constructor that loads settings via `se()` and forwards to the full 
 - `px_per_unit=2.0`: supersampling factor of the GLMakie screen; ignored (forced to `1.0`) while
   `precompile=true`.
 - `fxaa=true`: enable GLMakie's fast approximate anti-aliasing.
+- `text_fxaa=false`: anti-alias the text with FXAA instead of the distance-field shader; needs `fxaa=true`.
 - `new_window=false`: if `true`, open a new window instead of reusing the existing one.
 """
 function Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false, menus=false, px_per_unit=2.0,
-                  fxaa=true, new_window=false)
+                  fxaa=true, text_fxaa=false, new_window=false)
     set = se()
-    Viewer3D(set, show_kite, autolabel; precompile, menus, px_per_unit, fxaa, new_window)
+    Viewer3D(set, show_kite, autolabel; precompile, menus, px_per_unit, fxaa, text_fxaa, new_window)
 end
 
 """
     Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompile=false, menus=false,
-             px_per_unit=2.0, fxaa=true, new_window=false)
+             px_per_unit=2.0, fxaa=true, text_fxaa=false, new_window=false)
 
 Create and display a 3D viewer window for the kite power system.
 
@@ -253,12 +254,16 @@ optionally dropdown menus for plot selection, tolerances, time lapse, and projec
   thin tether/segment cylinders at the cost of render time. Forced to `1.0` while
   `precompile=true` so the warm-up render stays cheap regardless of what's passed.
 - `fxaa=true`: enable GLMakie's fast approximate anti-aliasing (FXAA) post-processing pass.
+- `text_fxaa=false`: if `true`, the viewer's text is anti-aliased by the FXAA pass instead of by
+  the distance-field shader, whose screen-space derivatives some virtual GPU drivers (e.g. VMware
+  with 3D acceleration) get wrong, leaving the text jagged. Needs `fxaa=true`; on real GPUs it
+  makes the text slightly softer. Button, menu and label texts are not affected.
 - `new_window=false`: if `true`, show the figure on a new `GLMakie.Screen`, i.e. in a second window,
   instead of replacing the content of the existing one. The text overlays and the kite orientation
   are module-global, so all windows show the same text and kite.
 """
 function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompile=false, menus=false,
-                   px_per_unit=2.0, fxaa=true, new_window=false)
+                   px_per_unit=2.0, fxaa=true, text_fxaa=false, new_window=false)
     global last_status
     WIDTH  = 840
     HEIGHT = 900
@@ -342,14 +347,19 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
 
     fontsize[]  = TEXT_SIZE
     fontsize2[] = AXIS_LABEL_SIZE
-    text!(scene3D, "z", position = Point3f(0, 0, 14.6), fontsize = fontsize2, align = (:center, :center))
-    text!(scene3D, "x", position = Point3f(17, 0,0), fontsize = fontsize2, align = (:center, :center))
-    text!(scene3D, "y", position = Point3f( 0, 14.5, 0), fontsize = fontsize2, align = (:center, :center))
+    text!(scene3D, "z", position = Point3f(0, 0, 14.6), fontsize = fontsize2, align = (:center, :center),
+          fxaa = text_fxaa)
+    text!(scene3D, "x", position = Point3f(17, 0,0), fontsize = fontsize2, align = (:center, :center),
+          fxaa = text_fxaa)
+    text!(scene3D, "y", position = Point3f( 0, 14.5, 0), fontsize = fontsize2, align = (:center, :center),
+          fxaa = text_fxaa)
 
     font = default_viewer_font(set)
 
-    text!(scene2D, status, position = Point2f( 20, 0), fontsize = TEXT_SIZE, font=font, align = (:left, :bottom), space=:pixel)
-    text!(scene2D, plot_file, position = Point2f( 420, 0), fontsize = TEXT_SIZE, font=font, align = (:left, :bottom), space=:pixel)
+    text!(scene2D, status, position = Point2f( 20, 0), fontsize = TEXT_SIZE, font=font, align = (:left, :bottom),
+          space=:pixel, fxaa=text_fxaa)
+    text!(scene2D, plot_file, position = Point2f( 420, 0), fontsize = TEXT_SIZE, font=font, align = (:left, :bottom),
+          space=:pixel, fxaa=text_fxaa)
 
     textnode2[]="depower:\nsteering:\n"
 
@@ -400,7 +410,7 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
                  rotation, set, btn_RESET, btn_ZOOM_in, btn_ZOOM_out,
                  btn_PLAY_PAUSE, btn_AUTO, btn_PARKING, btn_STOP, menu1, menu2, menu3, menu4, tb, btn_OK,
                  sw, 0, mod_text, 0, show_kite, false, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
-    txt2 = init_system(s, s.scene3D; show_kite=show_kite)
+    txt2 = init_system(s, s.scene3D; show_kite, text_fxaa)
 
     camera = cameracontrols(s.scene3D.scene)
     reset_view(camera, s.scene3D)
