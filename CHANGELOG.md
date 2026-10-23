@@ -6,6 +6,8 @@
   anti-aliasing on or off
 - keyword argument `new_window=false` of both `Viewer3D` constructors, opening a second window
   instead of reusing the existing one
+- keyword argument `menus=false` of the convenience constructor `Viewer3D(show_kite, autolabel)`,
+  forwarded to the full constructor
 
 ## KiteViewers v0.7.0 - 2026-10-11
 ### Added

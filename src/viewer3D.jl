@@ -205,8 +205,8 @@ function set_title!(kv::Viewer3D, title)
 end
 
 """
-    Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false, px_per_unit=2.0, fxaa=true,
-             new_window=false)
+    Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false, menus=false, px_per_unit=2.0,
+             fxaa=true, new_window=false)
 
 Convenience constructor that loads settings via `se()` and forwards to the full constructor.
 
@@ -217,15 +217,17 @@ Convenience constructor that loads settings via `se()` and forwards to the full 
 # Keyword Arguments
 - `precompile=false`: if `true`, the viewer is created in precompilation mode
   (window hidden, reduced resolution).
+- `menus=false`: if `true`, show additional dropdown menus for plot type, tolerances, time lapse,
+  and project management.
 - `px_per_unit=2.0`: supersampling factor of the GLMakie screen; ignored (forced to `1.0`) while
   `precompile=true`.
 - `fxaa=true`: enable GLMakie's fast approximate anti-aliasing.
 - `new_window=false`: if `true`, open a new window instead of reusing the existing one.
 """
-function Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false, px_per_unit=2.0, fxaa=true,
-                  new_window=false)
+function Viewer3D(show_kite=true, autolabel="Autopilot"; precompile=false, menus=false, px_per_unit=2.0,
+                  fxaa=true, new_window=false)
     set = se()
-    Viewer3D(set, show_kite, autolabel; precompile, px_per_unit, fxaa, new_window)
+    Viewer3D(set, show_kite, autolabel; precompile, menus, px_per_unit, fxaa, new_window)
 end
 
 """
