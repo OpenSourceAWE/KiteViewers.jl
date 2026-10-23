@@ -1,5 +1,12 @@
 # Changelog
 
+## Unreleased
+### Added
+- keyword argument `fxaa=true` of both `Viewer3D` constructors, switching GLMakie's FXAA
+  anti-aliasing on or off
+- keyword argument `new_window=false` of both `Viewer3D` constructors, opening a second window
+  instead of reusing the existing one
+
 ## KiteViewers v0.7.0 - 2026-10-11
 ### Added
 - function `set_title!(kv::Viewer3D, title)`, setting the title of the viewer window; the tests use
