@@ -147,54 +147,71 @@ end
     @test !isnothing(viewer_menus.btn_OK)
 end
 
-# the V3 topology and log are only in the data folder of KiteViewers, not in the one of KiteUtils
+# the V3 definition and log are only in the data folder of KiteViewers, not in the one of KiteUtils
 const VIEWER_DATA = joinpath(dirname(@__DIR__), "data")
 
-@testset "segment topology" begin
+@testset "the V3 definition draws each segment as its tether, wing or bridle" begin
     set_title!(viewer_menus, Test.get_testset().description)
-    segments = load_segments(joinpath(VIEWER_DATA, "v3_segments.csv"))
-    @test size(segments, 2) == 3
-    @test all(t -> t in Int.((TETHER, BRIDLE, WING)), segments[:, 3])
-    n_points = maximum(segments[:, 1:2])
-    n_wing = count(==(Int(WING)), segments[:, 3])
-
-    init_segments(viewer_menus, segments)
-    @test length(viewer_menus.points) == n_points
+    definition = load_structure(joinpath(VIEWER_DATA, "v3_structure.yml"))
+    init_segments(viewer_menus, definition)
+    @test length(viewer_menus.points) == 44
     @test isempty(viewer_menus.part_positions[])
-    @test length(viewer_menus.positions[]) == size(segments, 1) - n_wing
-    @test length(viewer_menus.wing_positions[]) == n_wing
 
     state = load_log("tmp_parking"; path=VIEWER_DATA, frame=KS).syslog[1]
     scale = 0.08
-    tether_points = unique(segments[segments[:, 3] .== Int(TETHER), 1:2])
     unscaled(i) = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
+    midpoint(segment) = (unscaled(segment.points[1]) + unscaled(segment.points[2])) / 2
+    kinds = KiteViewers.segment_kinds(definition)
+    @test [count(==(kind), kinds) for kind in (:tether, :wing, :bridle)] == [6, 46, 43]
+    @test findall(==(:tether), kinds) == definition.tethers[1].segments
+    @test all(all(in(2:21), segment.points) == (kind == :wing)
+              for (segment, kind) in zip(definition.segments, kinds))
+    tether = definition.segments[kinds .== :tether]
+    wing = definition.segments[kinds .== :wing]
+    tether_and_bridle = definition.segments[kinds .!= :wing]
+
     update_segments!(viewer_menus, state; scale)
-    @test all(viewer_menus.points[i] ≈ unscaled(i) for i in 1:n_points)
+    @test viewer_menus.points ≈ unscaled.(1:44)
+    @test viewer_menus.point_positions[] == viewer_menus.points
+    @test viewer_menus.wing_positions[] ≈ midpoint.(wing)
+    @test viewer_menus.positions[] ≈ midpoint.(tether_and_bridle)
+    tether_radius = maximum(size[1] for size in viewer_menus.markersizes[])
+    @test [size[1] == tether_radius for size in viewer_menus.markersizes[]] ==
+          [segment in tether for segment in tether_and_bridle]
+    @test all(r -> norm(r) ≈ 1, viewer_menus.wing_rotation[])
+
     update_segments!(viewer_menus, state; scale, kite_scale=2.0)
     # the tether is not scaled, the kite is
+    tether_points = unique(i for segment in tether for i in segment.points)
     @test all(viewer_menus.points[i] ≈ unscaled(i) for i in tether_points)
-    kite_points = setdiff(1:n_points, tether_points)
+    kite_points = setdiff(1:44, tether_points)
     @test !all(viewer_menus.points[i] ≈ unscaled(i) for i in kite_points)
-    @test viewer_menus.point_positions[] == viewer_menus.points
-    @test all(m -> m[3] >= 0, viewer_menus.wing_markersizes[])
-    @test all(r -> norm(r) ≈ 1, viewer_menus.wing_rotation[])
 end
 
-@testset "segment topology without tether" begin
+@testset "a definition without tether is scaled about its centroid" begin
     set_title!(viewer_menus, Test.get_testset().description)
-    # without a tether the kite is scaled about the centroid of its points
-    triangle = [1 2 Int(BRIDLE); 2 3 Int(WING); 3 1 Int(WING)]
+    points = [Point(; name="p$i", pos_ENU=[i, 0, 0]) for i in 1:3]
+    segments = [Segment(; name="s$i", points=(i, mod1(i + 1, 3))) for i in 1:3]
+    triangle = SystemDefinition(; metadata=Metadata("triangle", "", "", "", "", 3, ""),
+        points, segments, spanwise_stations=[SpanwiseStation(; name="rib", wing=1,
+        points=[2, 3])], wings=[Wing(; name="wing", pos_ENU=[0, 0, 0])])
     n_plots = length(viewer_menus.scene3D.scene.plots)
     init_segments(viewer_menus, triangle)
-    # the wing and point layers of the V3 topology are replaced, not kept
+    # the wing and point layers of the V3 definition are replaced, not kept
     @test length(viewer_menus.scene3D.scene.plots) == n_plots
     state = demo_state(3)
     update_segments!(viewer_menus, state; kite_scale=2.0)
     points = [Point3f(state.X[i], state.Y[i], state.Z[i]) for i in 1:3]
     center = sum(points) / 3
     @test all(viewer_menus.points[i] ≈ center + 2 * (points[i] - center) for i in 1:3)
-    @test length(viewer_menus.positions[]) == 1
-    @test length(viewer_menus.wing_positions[]) == 2
+    @test length(viewer_menus.positions[]) == 2
+    @test length(viewer_menus.wing_positions[]) == 1
+end
+
+@testset "every KiteGeometry export reaches a caller of KiteViewers" begin
+    exported = filter(name -> Base.isexported(KiteGeometry, name), names(KiteGeometry))
+    @test filter(name -> !isdefined(KiteViewers, name), exported) == Symbol[]
+    @test calc_heading === KiteUtils.calc_heading
 end
 
 @testset "closing the window" begin
