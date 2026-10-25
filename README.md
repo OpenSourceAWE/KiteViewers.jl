@@ -10,12 +10,11 @@ It is part of Julia Kite Power Tools, which consist of the following packages:
 <p align="center"><img src="./docs/kite_power_tools.png" width="500" /></p>
 
 ## What to install
-If you want to run simulations and see the results in 3D, please install the meta package  [KiteSimulators](https://github.com/aenarete/KiteSimulators.jl) . If you just want to replay log files
-or implement a real-time viewer for a system outside of Julia this package will be sufficient. When you have KiteSimulators installed, please replace
-any statement `using KiteViewers` in the examples with `using KiteSimulators`.
+If you want to run simulations and see the results in 3D, please install the package [KiteControllers](https://github.com/OpenSourceAWE/KiteControllers.jl). If you just want to replay log files
+or implement a real-time viewer for a system outside of Julia this package will be sufficient.
 
 ## Installation
-Download and install [Julia 1.12 or 1.13](https://ufechner7.github.io/2024/08/09/installing-julia-with-juliaup.html), if you haven't already.
+Download and install [Julia 1.12 or 1.13](https://ufechner7.github.io/2026/10/24/installing-julia-1.13-and-vscode.html), if you haven't already.
 
 If you don't have a project yet, create one with:
 
@@ -152,18 +151,18 @@ update_system(viewer, state, kite_scale=0.25)
 You can find more examples in the folder examples.
 
 ## Advanced usage
-For more examples see: [KiteSimulators](https://github.com/aenarete/KiteSimulators.jl)
+For more examples see: [KiteControllers](https://github.com/OpenSourceAWE/KiteControllers.jl)
 
 ## License
 This project is licensed under the MIT License. Please see the below WAIVER in association with the license.
 
 ## WAIVER
-Technische Universiteit Delft hereby disclaims all copyright interest in the package “KiteSimulators.jl” (simulators for airborne wind energy systems) written by the Author(s).
+Technische Universiteit Delft hereby disclaims all copyright interest in the package “KiteViewers.jl” (viewers for airborne wind energy systems) written by the Author(s).
 
 Prof.dr. H.G.C. (Henri) Werij, Dean of Aerospace Engineering
 
 ## See also
 - [Research Fechner](https://research.tudelft.nl/en/publications/?search=Uwe+Fechner&pageSize=50&ordering=rating&descending=true) for the scientic background of this code
-- The meta-package  [KiteSimulators](https://github.com/aenarete/KiteSimulators.jl)
-- the packages [KiteModels](https://github.com/ufechner7/KiteModels.jl) and [WinchModels](https://github.com/aenarete/WinchModels.jl) and [KitePodModels](https://github.com/aenarete/KitePodModels.jl) and [AtmosphericModels](https://github.com/OpenSourceAWE/AtmosphericModels.jl)
+- the packages [KiteModels](https://github.com/OpenSourceAWE/KiteModels.jl) and [WinchModels](https://github.com/aenarete/WinchModels.jl) and [KitePodModels](https://github.com/OpenSourceAWE/KitePodModels.jl) and [AtmosphericModels](https://github.com/OpenSourceAWE/AtmosphericModels.jl)
+- The package [RobustKiteControllers](https://github.com/OpenSourceAWE/RobustKiteControllers.jl) which provides path following controllers, but no reel-in control yet.
 - the package [KiteUtils](https://github.com/OpenSourceAWE/KiteUtils.jl) and [KiteControllers](https://github.com/OpenSourceAWE/KiteControllers.jl)
