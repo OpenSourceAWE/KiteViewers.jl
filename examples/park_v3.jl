@@ -1,12 +1,14 @@
 using KiteViewers, KiteUtils
 using Timers: wait_until
 
-# Replays the V3 parking log `data/tmp_parking.arrow`, drawn from `data/v3_structure.yml`.
+# Replays the V3 parking log `data/tmp_parking.arrow`, drawn from KiteGeometry's V3 document.
 # Run it from the repository root; it needs no simulation package.
 
 TIME_LAPSE_RATIO = 1 # 1 = real time; N = N times faster, drawing every N-th log row
 
-definition = load_structure(joinpath(get_data_path(), "v3_structure.yml"))
+# strict=false drops the pulley efficiency of a SymbolicAWEModels pulley model
+v3_structure = joinpath(pkgdir(KiteGeometry), "test", "data", "v3_psm_structure.yml")
+definition = load_structure(v3_structure; strict=false)
 log = load_log("tmp_parking")
 dt::Float64 = log.syslog[2].time - log.syslog[1].time
 

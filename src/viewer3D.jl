@@ -77,10 +77,11 @@ Holds the Makie figure, 3D scene, camera, screen, particle/tether geometry obser
 settings, UI buttons, optional menus, and simulation bookkeeping (step counter, energy,
 stop flag, etc.).
 
-The `definition`/`wing_*`/`point_*` fields are `nothing` until [`init_segments`](@ref) sets
-up drawing a `SystemDefinition`: `positions`/`markersizes`/`rotation` then back its tether
-and bridle segments, the `wing_*` observables its wing segments, and `point_positions` its
-points; `wing_plot` and `point_plot` are the plots of the last two layers.
+The `definition`/`wing_*`/`point_*`/`canopy_plot` fields are `nothing` until
+[`init_segments`](@ref) sets up drawing a `SystemDefinition`: `positions`/`markersizes`/
+`rotation` then back its tether and bridle segments, the `wing_*` observables its wing
+segments, and `point_positions` its points and the corners of its canopy faces; `wing_plot`,
+`point_plot` and `canopy_plot` are the plots of the wing, point and canopy layers.
 
 Use the outer constructors [`Viewer3D(show_kite, autolabel; precompile)`](@ref) or
 [`Viewer3D(set, show_kite, autolabel; precompile, menus)`](@ref) to create an instance.
@@ -122,6 +123,7 @@ mutable struct Viewer3D <: AKV
     point_positions::Union{Nothing, Observable{Vector{Point3f}}}
     wing_plot::Union{Nothing, GLMakie.Makie.AbstractPlot}
     point_plot::Union{Nothing, GLMakie.Makie.AbstractPlot}
+    canopy_plot::Union{Nothing, GLMakie.Makie.AbstractPlot}
 end
 
 """
@@ -391,7 +393,7 @@ function Viewer3D(set::Settings, show_kite=true, autolabel="Autopilot"; precompi
     s = Viewer3D(fig, scene3D, cam, gl_screen, points, pos, part_pos, markersizes,
                  rotation, set, btn_RESET, btn_ZOOM_in, btn_ZOOM_out,
                  btn_PLAY_PAUSE, btn_AUTO, btn_PARKING, btn_STOP, menu1, menu2, menu3, menu4, tb, btn_OK,
-                 sw, 0, mod_text, 0, show_kite, false, nothing, nothing, nothing, nothing, nothing, nothing, nothing)
+                 sw, 0, mod_text, 0, show_kite, false, ntuple(_ -> nothing, 8)...)
     txt2 = init_system(s, s.scene3D; show_kite=show_kite)
 
     camera = cameracontrols(s.scene3D.scene)

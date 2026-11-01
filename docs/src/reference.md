@@ -38,5 +38,6 @@ update_segments!
 KiteViewers.segment_kinds
 KiteViewers.segment_radius
 KiteViewers.segment_points
+KiteViewers.canopy_triangles
 KiteViewers.segment_geometry
 ```

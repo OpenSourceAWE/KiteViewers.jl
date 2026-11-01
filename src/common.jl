@@ -84,21 +84,33 @@ function segment_points(definition, selected)
 end
 
 """
+    canopy_triangles(definition::SystemDefinition) -> Vector{GLTriangleFace}
+
+The canopy faces of `definition` cut into triangles fanned out from each face's first
+point, as indices of its points.
+"""
+function canopy_triangles(definition::SystemDefinition)
+    return [GLTriangleFace(face.points[1], face.points[i], face.points[i + 1])
+            for face in definition.canopy_faces for i in 2:length(face.points) - 1]
+end
+
+"""
     init_segments(kv::AKV, definition::SystemDefinition)
 
 Set up `kv` to draw the points and segments of `definition` instead of the built-in
 one-point/four-point/three-line kite models; the segments have zero size until
 [`update_segments!`](@ref) places them.
-Tether and bridle segments go on the yellow tether layer, wing segments on a black one, and
-the points on small spheres in place of `kv.part_positions`, larger on the tether. A
-further call replaces the layers of the one before.
+Tether and bridle segments go on the yellow tether layer, wing segments on a black one, the
+canopy faces on a white surface, and the points on small spheres in place of
+`kv.part_positions`, larger on the tether. A further call replaces the layers of the one
+before.
 """
 function init_segments(kv::AKV, definition::SystemDefinition)
     kinds = segment_kinds(definition)
     n_points = length(definition.points)
     n_wing = count(==(:wing), kinds)
 
-    for plot in (kv.wing_plot, kv.point_plot)
+    for plot in (kv.wing_plot, kv.point_plot, kv.canopy_plot)
         isnothing(plot) || delete!(kv.scene3D.scene, plot)
     end
     kv.definition = definition
@@ -124,6 +136,8 @@ function init_segments(kv::AKV, definition::SystemDefinition)
     sphere = Sphere(Point3f(0, 0, 0), POINT_RADIUS)
     kv.point_plot = meshscatter!(kv.scene3D, kv.point_positions, marker=sphere,
                                  markersize=point_size, color=:yellow)
+    kv.canopy_plot = mesh!(kv.scene3D, kv.point_positions, canopy_triangles(definition),
+                           color=:white)
     kv
 end
 

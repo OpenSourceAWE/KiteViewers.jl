@@ -78,8 +78,8 @@ to hook up buttons without importing anything else. `init_segments`/`update_segm
 Settings come from `KiteUtils` (`data/system.yaml` selects `data/settings.yaml`; `3l_settings.yaml`
 is the three-line variant). The keys this package reads are `segments`, `zoom`, `kite_scale`,
 `fixed_font` (empty = platform default from `default_viewer_font`) and `model` (path to the kite
-`.obj`). `data/` also holds replay fixtures: `tmp_parking.arrow` and `v3_structure.yml`, the V3 kite's
-structure document that `examples/park_v3.jl` draws it from.
+`.obj`). `data/` also holds the replay fixture `tmp_parking.arrow`, which `examples/park_v3.jl`
+draws from the V3 structure document in KiteGeometry's `test/data`.
 
 ## Development commands
 

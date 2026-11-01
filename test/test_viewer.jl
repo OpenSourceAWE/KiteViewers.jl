@@ -4,7 +4,8 @@ if dirname(Pkg.project().path) != @__DIR__
     Pkg.activate(@__DIR__)
 end
 using KiteViewers, Test
-using KiteViewers: Point3f, norm
+using KiteViewers: GLTriangleFace, Point3f, norm
+using KiteViewers.GLMakie: coordinates
 
 set_data_path()
 
@@ -147,12 +148,14 @@ end
     @test !isnothing(viewer_menus.btn_OK)
 end
 
-# the V3 definition and log are only in the data folder of KiteViewers, not in the one of KiteUtils
+# the V3 log is only in the data folder of KiteViewers, not in the one of KiteUtils
 const VIEWER_DATA = joinpath(dirname(@__DIR__), "data")
+# loaded with strict=false, which drops the pulley efficiency of a SymbolicAWEModels model
+const V3_STRUCTURE = joinpath(pkgdir(KiteGeometry), "test", "data", "v3_psm_structure.yml")
 
-@testset "the V3 definition draws each segment as its tether, wing or bridle" begin
+@testset "the V3 definition draws its segments and its canopy faces" begin
     set_title!(viewer_menus, Test.get_testset().description)
-    definition = load_structure(joinpath(VIEWER_DATA, "v3_structure.yml"))
+    definition = load_structure(V3_STRUCTURE; strict=false)
     init_segments(viewer_menus, definition)
     @test length(viewer_menus.points) == 44
     @test isempty(viewer_menus.part_positions[])
@@ -162,7 +165,7 @@ const VIEWER_DATA = joinpath(dirname(@__DIR__), "data")
     unscaled(i) = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
     midpoint(segment) = (unscaled(segment.points[1]) + unscaled(segment.points[2])) / 2
     kinds = KiteViewers.segment_kinds(definition)
-    @test [count(==(kind), kinds) for kind in (:tether, :wing, :bridle)] == [6, 46, 43]
+    @test [count(==(kind), kinds) for kind in (:tether, :wing, :bridle)] == [6, 19, 43]
     @test findall(==(:tether), kinds) == definition.tethers[1].segments
     @test all(all(in(2:21), segment.points) == (kind == :wing)
               for (segment, kind) in zip(definition.segments, kinds))
@@ -179,6 +182,10 @@ const VIEWER_DATA = joinpath(dirname(@__DIR__), "data")
     @test [size[1] == tether_radius for size in viewer_menus.markersizes[]] ==
           [segment in tether for segment in tether_and_bridle]
     @test all(r -> norm(r) ≈ 1, viewer_menus.wing_rotation[])
+    triangles = KiteViewers.canopy_triangles(definition)
+    @test length(triangles) == 2 * length(definition.canopy_faces)
+    @test triangles[1:2] == [GLTriangleFace(2, 3, 5), GLTriangleFace(2, 5, 4)] # face 2-3-5-4
+    @test coordinates(viewer_menus.canopy_plot[1][]) ≈ viewer_menus.points
 
     update_segments!(viewer_menus, state; scale, kite_scale=2.0)
     # the tether is not scaled, the kite is
@@ -197,7 +204,7 @@ end
         points=[2, 3])], wings=[Wing(; name="wing", pos_ENU=[0, 0, 0])])
     n_plots = length(viewer_menus.scene3D.scene.plots)
     init_segments(viewer_menus, triangle)
-    # the wing and point layers of the V3 definition are replaced, not kept
+    # the wing, point and canopy layers of the V3 definition are replaced, not kept
     @test length(viewer_menus.scene3D.scene.plots) == n_plots
     state = demo_state(3)
     update_segments!(viewer_menus, state; kite_scale=2.0)
