@@ -1,44 +1,59 @@
+const TICK_RADIUS = Float32(0.1 * SCALE)
+const SHAFT_RADIUS = Float32(0.05 * SCALE)
+const ARROW_RADIUS = Float32(0.18 * SCALE)
+const ARROW_LENGTH = 0.7 # [axis steps]
+const ARROW_OVERLAP = 0.035 # [axis steps] the arrowhead's base lies inside the shaft
+
+"""
+    axis_arrowhead!(scene, direction, shaft_end, step, color)
+
+Draw the arrowhead of the axis along the unit vector `direction` as one cone, its base on
+the shaft ending `shaft_end` from the origin, its length in the axis' tick distance `step`.
+"""
+function axis_arrowhead!(scene, direction, shaft_end, step, color)
+    base = direction * Float32(shaft_end - ARROW_OVERLAP * step)
+    tip = base + direction * Float32(ARROW_LENGTH * step)
+    mesh!(scene, Cone(base, tip, ARROW_RADIUS); color)
+end
+
+"""
+    create_coordinate_system(scene, points=10, max_x=15.0)
+
+Draw the x (red), y (green) and z (blue) axis into `scene`: a shaft with a sphere on each
+tick and an arrowhead. The x axis is `max_x` long, with `points + 2` ticks.
+"""
 function create_coordinate_system(scene, points = 10, max_x = 15.0)
-    # create origin
-    mesh!(scene, Sphere(Point3f(0, 0, 0), 0.1 * SCALE), color=RGBf(0.7, 0.7, 0.7))
-    
-    # create x-axis in red
+    mesh!(scene, Sphere(Point3f(0, 0, 0), TICK_RADIUS), color=RGBf(0.7, 0.7, 0.7))
+
     points += 2
+    x_step = max_x / points
     for x in range(1, length=points)
-        mesh!(scene, Sphere(Point3f(x * max_x/points, 0, 0), 0.1 * SCALE), color=:red)
+        mesh!(scene, Sphere(Point3f(x * x_step, 0, 0), TICK_RADIUS), color=:red)
     end
-    mesh!(scene, Cylinder(Point3f(-max_x/points, 0, 0), Point3f(points * max_x/points, 0, 0), Float32(0.05 * SCALE)), color=:red)
-    for i in range(0, length=points)
-        start = Point3f((points + 0.07 * (i-0.5)) * max_x/points, 0, 0)
-        stop = Point3f((points + 0.07 * (i+0.5)) * max_x/points, 0, 0)
-        mesh!(scene, Cylinder(start, stop, Float32(0.018 * (10 - i) * SCALE)), color=:red)
-    end
-    
-    # create y-axis in green
+    mesh!(scene, Cylinder(Point3f(-x_step, 0, 0), Point3f(max_x, 0, 0), SHAFT_RADIUS),
+          color=:red)
+    axis_arrowhead!(scene, Point3f(1, 0, 0), max_x, x_step, :red)
+
     points -= 3
+    y_end = (points + 1) * SCALE
     for y in range(0, length = 2points + 1)
         if y - points != 0
-            mesh!(scene, Sphere(Point3f(0, (y - points) * SCALE, 0), 0.1 * SCALE), color=:green)
+            tick = Point3f(0, (y - points) * SCALE, 0)
+            mesh!(scene, Sphere(tick, TICK_RADIUS), color=:green)
         end
     end
-    mesh!(scene, Cylinder(Point3f(0, -(points+1) * SCALE, 0), Point3f(0, (points+1) * SCALE , 0), Float32(0.05 * SCALE)), color=:green)
-    for i in range(0, length=10)
-        start = Point3f(0, (points+1 + 0.07 * (i-0.5)) * SCALE, 0)
-        stop = Point3f(0, (points+1 + 0.07 * (i+0.5)) * SCALE, 0)
-        mesh!(scene, Cylinder(start, stop, Float32(0.018 * (10 - i) * SCALE)), color=:green)
-    end
+    mesh!(scene, Cylinder(Point3f(0, -y_end, 0), Point3f(0, y_end, 0), SHAFT_RADIUS),
+          color=:green)
+    axis_arrowhead!(scene, Point3f(0, 1, 0), y_end, SCALE, :green)
 
-    # create z-axis in blue
     points += 1
+    z_end = (points + 1) * SCALE
     for z in range(2, length=points)
-        mesh!(scene, Sphere(Point3f(0, 0, (z - 1) * SCALE), 0.1 * SCALE), color=:mediumblue)
+        mesh!(scene, Sphere(Point3f(0, 0, (z - 1) * SCALE), TICK_RADIUS), color=:mediumblue)
     end
-    mesh!(scene, Cylinder(Point3f(0, 0, -SCALE), Point3f(0, 0, (points+1) * SCALE), Float32(0.05 * SCALE)), color=:mediumblue)
-    for i in range(0, length=10)
-        start = Point3f(0, 0, (points+1 + 0.07 * (i-0.5)) * SCALE)
-        stop = Point3f(0, 0, (points+1 + 0.07 * (i+0.5)) * SCALE)
-        mesh!(scene, Cylinder(start, stop, Float32(0.018 * (10 - i) * SCALE)), color=:dodgerblue3)
-    end 
+    mesh!(scene, Cylinder(Point3f(0, 0, -SCALE), Point3f(0, 0, z_end), SHAFT_RADIUS),
+          color=:mediumblue)
+    axis_arrowhead!(scene, Point3f(0, 0, 1), z_end, SCALE, :dodgerblue3)
 end
 
 const TETHER_RADIUS = 0.5f0 # relative to the tether cylinder of `init_system`

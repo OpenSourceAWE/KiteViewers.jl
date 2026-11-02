@@ -27,7 +27,7 @@ Timers = "21f18d07-b854-4dab-86f0-c15a3821819a"
 [compat]
 FileIO = "1"
 GLMakie = "~0.11, ~0.12, ~0.13"
-GeometryBasics = "0.5"
+GeometryBasics = "0.5.8"
 Joysticks = "0.1.2, 0.1.4"
 KiteGeometry = "0.3"
 KiteUtils = "0.13"

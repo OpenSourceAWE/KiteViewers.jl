@@ -1,6 +1,9 @@
 # Changelog
 
 ## Unreleased
+These notes go out as 0.8.0, not as a patch: the `BREAKING:` lines change what a caller on
+`KiteViewers = "0.7"` uses, such as the examples of RobustKiteControllers.
+
 ### Changed
 - BREAKING: `init_segments` takes a KiteGeometry `SystemDefinition` in place of a segment matrix;
   a segment is drawn as tether, wing or bridle from the definition's tethers, spanwise stations
@@ -12,6 +15,8 @@
 - `KiteGeometry` 0.3 is a dependency and is reexported beside `KiteUtils`. A script that also
   does `using GLMakie` or `using GeometryBasics` writes `KiteGeometry.Point` or `Point3f`, as
   `Point` is then ambiguous.
+- Each axis of the coordinate system ends in one cone instead of a stack of cylinders, which
+  needs `GeometryBasics` 0.5.8.
 
 ## KiteViewers v0.7.0 - 2026-10-11
 ### Added

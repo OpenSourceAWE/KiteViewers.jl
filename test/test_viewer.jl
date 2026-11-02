@@ -148,6 +148,19 @@ end
     @test !isnothing(viewer_menus.btn_OK)
 end
 
+@testset "each coordinate axis ends in one cone" begin
+    scene = KiteViewers.GLMakie.Scene()
+    KiteViewers.create_coordinate_system(scene)
+    drawn = [coordinates(plot[1][]) for plot in scene.plots]
+    for (axis, shaft_end, step) in ((1, 15.0, 1.25), (2, 12.0, 1.2), (3, 13.2, 1.2))
+        beyond_shaft(vertices) = all(>(shaft_end - 0.05), getindex.(vertices, axis))
+        heads = filter(beyond_shaft, drawn)
+        @test length(heads) == 1
+        @test maximum(getindex.(heads[1], axis)) ≈ shaft_end + 0.665step
+        @test maximum(norm(vertex[setdiff(1:3, axis)]) for vertex in heads[1]) ≈ 0.216f0
+    end
+end
+
 # the V3 log is only in the data folder of KiteViewers, not in the one of KiteUtils
 const VIEWER_DATA = joinpath(dirname(@__DIR__), "data")
 # loaded with strict=false, which drops the pulley efficiency of a SymbolicAWEModels model

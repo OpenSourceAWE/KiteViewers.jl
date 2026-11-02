@@ -24,6 +24,8 @@ KiteViewers.pause
 KiteViewers.set_status
 KiteViewers.set_title!
 KiteViewers.copy_examples
+KiteViewers.create_coordinate_system
+KiteViewers.axis_arrowhead!
 ```
 
 ## Drawing a system definition
