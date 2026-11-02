@@ -1,5 +1,17 @@
 # Changelog
 
+## Unreleased
+### Added
+- keyword argument `fxaa=true` of both `Viewer3D` constructors, switching GLMakie's FXAA
+  anti-aliasing on or off
+- keyword argument `text_fxaa=false` of both `Viewer3D` constructors, anti-aliasing the viewer's
+  text with FXAA instead of the distance-field shader; a workaround for virtual GPU drivers such as
+  VMware's, which render the text without anti-aliasing
+- keyword argument `new_window=false` of both `Viewer3D` constructors, opening a second window
+  instead of reusing the existing one
+- keyword argument `menus=false` of the convenience constructor `Viewer3D(show_kite, autolabel)`,
+  forwarded to the full constructor
+
 ## KiteViewers v0.7.0 - 2026-10-11
 ### Added
 - function `set_title!(kv::Viewer3D, title)`, setting the title of the viewer window; the tests use

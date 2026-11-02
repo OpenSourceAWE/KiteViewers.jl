@@ -133,7 +133,7 @@ end
 @testset "viewer with menus" begin
     # A second viewer, as init_segments changes the layers of the viewer it is called on.
     # It is created last: GLMakie shows it in the window of the shared viewer.
-    global viewer_menus = Viewer3D(se(), false; menus=true)
+    global viewer_menus = Viewer3D(se(), false; menus=true, text_fxaa=true)
     set_title!(viewer_menus, Test.get_testset().description)
     # draw a four-point kite instead of the placeholder tether of a new viewer
     segments = se().segments
@@ -145,6 +145,8 @@ end
     @test !isnothing(viewer_menus.menu_project)
     @test !isnothing(viewer_menus.t_sim)
     @test !isnothing(viewer_menus.btn_OK)
+    plots = KiteViewers.GLMakie.Makie.collect_atomic_plots(viewer_menus.fig.scene)
+    @test count(p -> p isa KiteViewers.GLMakie.Text && p.fxaa[], plots) == 11
 end
 
 # the V3 topology and log are only in the data folder of KiteViewers, not in the one of KiteUtils

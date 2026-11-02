@@ -212,7 +212,7 @@ function update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
 end
 
 # draw the kite power system, consisting of the tether, the kite and the state (text and numbers)
-function init_system(kv::AbstractKiteViewer, scene; show_kite=true)
+function init_system(kv::AbstractKiteViewer, scene; show_kite=true, text_fxaa=false)
     sphere = Sphere(Point3f(0, 0, 0), Float32(0.07 * SCALE))
     meshscatter!(scene, kv.part_positions, marker=sphere, markersize=1.0, color=:yellow)
     cyl = Cylinder(Point3f(0,0,-0.5), Point3f(0,0,0.5), Float32(0.035 * SCALE))        
@@ -221,7 +221,8 @@ function init_system(kv::AbstractKiteViewer, scene; show_kite=true)
         meshscatter!(scene, kite_pos, marker=KITE, markersize = 0.25, rotation=quat, color=:blue)
     end
     font = default_viewer_font(kv.set)
-    text!(scene, textnode, position  = Point2f(50, 110), fontsize=TEXT_SIZE, font=font, align = (:left, :top), space=:pixel)
+    text!(scene, textnode, position  = Point2f(50, 110), fontsize=TEXT_SIZE, font=font, align = (:left, :top),
+          space=:pixel, fxaa=text_fxaa)
     line_spacing = TEXT_SIZE + 4
     half_line_shift = 0.5 * line_spacing
     upper_right_lines = [@lift(begin
@@ -229,7 +230,7 @@ function init_system(kv::AbstractKiteViewer, scene; show_kite=true)
         i <= length(lines) ? lines[i] : ""
     end) for i in 1:5]
     [text!(scene, upper_right_lines[i], position=Point2f(POS_X, POS_Y + half_line_shift - (i-1) * line_spacing),
-           fontsize=TEXT_SIZE, font=font, align=(:left, :top), space=:pixel) for i in 1:5]
+           fontsize=TEXT_SIZE, font=font, align=(:left, :top), space=:pixel, fxaa=text_fxaa) for i in 1:5]
 end
 
 """
