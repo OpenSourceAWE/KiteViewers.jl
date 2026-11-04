@@ -17,6 +17,7 @@ These notes go out as 0.8.0, not as a patch: the `BREAKING:` lines change what a
   `Point` is then ambiguous.
 - Each axis of the coordinate system ends in one cone instead of a stack of cylinders, which
   needs `GeometryBasics` 0.5.8.
+- Every sphere the viewer draws has 242 faces instead of 1058.
 
 ## KiteViewers v0.7.0 - 2026-10-11
 ### Added

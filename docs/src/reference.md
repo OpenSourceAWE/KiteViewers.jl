@@ -26,6 +26,7 @@ KiteViewers.set_title!
 KiteViewers.copy_examples
 KiteViewers.create_coordinate_system
 KiteViewers.axis_arrowhead!
+KiteViewers.sphere_mesh
 ```
 
 ## Drawing a system definition

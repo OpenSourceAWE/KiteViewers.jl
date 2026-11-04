@@ -3,6 +3,15 @@ const SHAFT_RADIUS = Float32(0.05 * SCALE)
 const ARROW_RADIUS = Float32(0.18 * SCALE)
 const ARROW_LENGTH = 0.7 # [axis steps]
 const ARROW_OVERLAP = 0.035 # [axis steps] the arrowhead's base lies inside the shaft
+const SPHERE_RESOLUTION = 12 # a sphere then has 2(n - 1)^2 = 242 faces
+
+"""
+    sphere_mesh(center, radius)
+
+The mesh of every sphere the viewer draws, smooth-shaded at `SPHERE_RESOLUTION`.
+"""
+sphere_mesh(center, radius) =
+    normal_mesh(Tesselation(Sphere(center, radius), SPHERE_RESOLUTION))
 
 """
     axis_arrowhead!(scene, direction, shaft_end, step, color)
@@ -23,12 +32,12 @@ Draw the x (red), y (green) and z (blue) axis into `scene`: a shaft with a spher
 tick and an arrowhead. The x axis is `max_x` long, with `points + 2` ticks.
 """
 function create_coordinate_system(scene, points = 10, max_x = 15.0)
-    mesh!(scene, Sphere(Point3f(0, 0, 0), TICK_RADIUS), color=RGBf(0.7, 0.7, 0.7))
+    mesh!(scene, sphere_mesh(Point3f(0, 0, 0), TICK_RADIUS), color=RGBf(0.7, 0.7, 0.7))
 
     points += 2
     x_step = max_x / points
     for x in range(1, length=points)
-        mesh!(scene, Sphere(Point3f(x * x_step, 0, 0), TICK_RADIUS), color=:red)
+        mesh!(scene, sphere_mesh(Point3f(x * x_step, 0, 0), TICK_RADIUS), color=:red)
     end
     mesh!(scene, Cylinder(Point3f(-x_step, 0, 0), Point3f(max_x, 0, 0), SHAFT_RADIUS),
           color=:red)
@@ -39,7 +48,7 @@ function create_coordinate_system(scene, points = 10, max_x = 15.0)
     for y in range(0, length = 2points + 1)
         if y - points != 0
             tick = Point3f(0, (y - points) * SCALE, 0)
-            mesh!(scene, Sphere(tick, TICK_RADIUS), color=:green)
+            mesh!(scene, sphere_mesh(tick, TICK_RADIUS), color=:green)
         end
     end
     mesh!(scene, Cylinder(Point3f(0, -y_end, 0), Point3f(0, y_end, 0), SHAFT_RADIUS),
@@ -49,7 +58,8 @@ function create_coordinate_system(scene, points = 10, max_x = 15.0)
     points += 1
     z_end = (points + 1) * SCALE
     for z in range(2, length=points)
-        mesh!(scene, Sphere(Point3f(0, 0, (z - 1) * SCALE), TICK_RADIUS), color=:mediumblue)
+        tick = Point3f(0, 0, (z - 1) * SCALE)
+        mesh!(scene, sphere_mesh(tick, TICK_RADIUS), color=:mediumblue)
     end
     mesh!(scene, Cylinder(Point3f(0, 0, -SCALE), Point3f(0, 0, z_end), SHAFT_RADIUS),
           color=:mediumblue)
@@ -148,7 +158,7 @@ function init_segments(kv::AKV, definition::SystemDefinition)
     point_size = ones(Float32, n_points)
     tether_points = segment_points(definition, kinds .== :tether)
     point_size[tether_points] .= TETHER_POINT_RADIUS / POINT_RADIUS
-    sphere = Sphere(Point3f(0, 0, 0), POINT_RADIUS)
+    sphere = sphere_mesh(Point3f(0, 0, 0), POINT_RADIUS)
     kv.point_plot = meshscatter!(kv.scene3D, kv.point_positions, marker=sphere,
                                  markersize=point_size, color=:yellow)
     kv.canopy_plot = mesh!(kv.scene3D, kv.point_positions, canopy_triangles(definition),
@@ -220,7 +230,7 @@ end
 
 # draw the kite power system, consisting of the tether, the kite and the state (text and numbers)
 function init_system(kv::AbstractKiteViewer, scene; show_kite=true)
-    sphere = Sphere(Point3f(0, 0, 0), Float32(0.07 * SCALE))
+    sphere = sphere_mesh(Point3f(0, 0, 0), Float32(0.07 * SCALE))
     meshscatter!(scene, kv.part_positions, marker=sphere, markersize=1.0, color=:yellow)
     cyl = Cylinder(Point3f(0,0,-0.5), Point3f(0,0,0.5), Float32(0.035 * SCALE))        
     meshscatter!(scene, kv.positions, marker=cyl, rotation=kv.rotation, markersize=kv.markersizes, color=:yellow)

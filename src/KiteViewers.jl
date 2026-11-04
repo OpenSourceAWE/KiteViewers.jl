@@ -2,7 +2,7 @@ module KiteViewers
 
 using PrecompileTools: @compile_workload, @setup_workload 
 using FileIO, LinearAlgebra, Parameters, Printf, Reexport, Rotations
-using GeometryBasics: Cone, Cylinder, GLTriangleFace, Sphere
+using GeometryBasics: Cone, Cylinder, GLTriangleFace, Sphere, Tesselation, normal_mesh
 import GLMakie
 using GLMakie: @extractvalue, @lift, Button, Camera3D, Figure, GridLayout, LScene, Label,
     Menu, Observable, Point2f, Point3f, Quaternionf, RGBf, Rect, Textbox, Toggle, Vec3f,

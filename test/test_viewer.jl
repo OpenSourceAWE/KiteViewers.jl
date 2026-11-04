@@ -5,7 +5,7 @@ if dirname(Pkg.project().path) != @__DIR__
 end
 using KiteViewers, Test
 using KiteViewers: GLTriangleFace, Point3f, norm
-using KiteViewers.GLMakie: coordinates
+using KiteViewers.GLMakie: MeshScatter, coordinates, faces
 
 set_data_path()
 
@@ -13,6 +13,8 @@ set_data_path()
 if !@isdefined(viewer) || !isopen(viewer.screen)
     viewer::Viewer3D = Viewer3D(false)
 end
+
+const SPHERE_FACES = 242
 
 """
     demo_state_3l(segments)
@@ -161,6 +163,17 @@ end
     end
 end
 
+@testset "the coordinate system keeps its tick spheres, each with few faces" begin
+    scene = KiteViewers.GLMakie.Scene()
+    KiteViewers.create_coordinate_system(scene)
+    drawn = [plot[1][] for plot in scene.plots]
+    ticks = filter(mesh -> length(faces(mesh)) == SPHERE_FACES, drawn)
+    @test length(ticks) == 41
+    @test maximum(length ∘ faces, drawn) == SPHERE_FACES
+    pole_to_pole(mesh) = -(reverse(extrema(vertex[3] for vertex in coordinates(mesh)))...)
+    @test all(tick -> pole_to_pole(tick) ≈ 2KiteViewers.TICK_RADIUS, ticks)
+end
+
 # the V3 log is only in the data folder of KiteViewers, not in the one of KiteUtils
 const VIEWER_DATA = joinpath(dirname(@__DIR__), "data")
 # loaded with strict=false, which drops the pulley efficiency of a SymbolicAWEModels model
@@ -199,6 +212,9 @@ const V3_STRUCTURE = joinpath(pkgdir(KiteGeometry), "test", "data", "v3_psm_stru
     @test length(triangles) == 2 * length(definition.canopy_faces)
     @test triangles[1:2] == [GLTriangleFace(2, 3, 5), GLTriangleFace(2, 5, 4)] # face 2-3-5-4
     @test coordinates(viewer_menus.canopy_plot[1][]) ≈ viewer_menus.points
+    plots = viewer_menus.scene3D.scene.plots
+    markers = [plot.marker[] for plot in plots if plot isa MeshScatter]
+    @test maximum(length ∘ faces, markers) == SPHERE_FACES
 
     update_segments!(viewer_menus, state; scale, kite_scale=2.0)
     # the tether is not scaled, the kite is
