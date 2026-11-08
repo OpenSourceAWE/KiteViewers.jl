@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+### Changed
+- KiteUtils 0.14 is allowed next to 0.13. The viewer shows the azimuth the `SysState` holds and does not compute one, so the sign reversal of `azimuth_east` in KiteUtils 0.14 changes nothing here.
+
 ## KiteViewers v0.7.0 - 2026-10-11
 ### Added
 - function `set_title!(kv::Viewer3D, title)`, setting the title of the viewer window; the tests use
