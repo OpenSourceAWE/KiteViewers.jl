@@ -73,6 +73,60 @@ const POINT_RADIUS = 0.015f0 # in scene units
 const TETHER_POINT_RADIUS = Float32(0.045 * SCALE) # bead on the tether points
 
 """
+    SegmentType
+
+Deprecated. The kind of a row of a segment matrix: `TETHER`, `BRIDLE` or `WING`.
+"""
+@enum SegmentType TETHER=1 BRIDLE=2 WING=3
+
+"""
+    load_segments(filename) -> Matrix{Int64}
+
+Deprecated, use `load_structure`. Read a CSV with the columns
+`segment,point1,point2,segment_type` into the `n × 3` integer matrix
+`(point1, point2, segment_type)`, a [`SegmentType`](@ref) value per row.
+"""
+function load_segments(filename)
+    Base.depwarn("`load_segments` is deprecated, use `load_structure`.", :load_segments)
+    lines = readlines(filename)
+    type_of = Dict("tether" => Int(TETHER), "bridle" => Int(BRIDLE), "wing" => Int(WING))
+    segments = Matrix{Int64}(undef, length(lines) - 1, 3)
+    for (i, line) in enumerate(@view lines[2:end])
+        fields = split(line, ',')
+        segments[i, 1] = parse(Int64, fields[2])
+        segments[i, 2] = parse(Int64, fields[3])
+        segments[i, 3] = type_of[fields[4]]
+    end
+    return segments
+end
+
+"""
+    matrix_definition(segments::AbstractMatrix{<:Integer}) -> SystemDefinition
+
+The points and segments of an `n × 3` matrix `(point1, point2, segment_type)` as a
+definition.
+"""
+function matrix_definition(segments::AbstractMatrix{<:Integer})
+    n_points = maximum(@view segments[:, 1:2])
+    return SystemDefinition(;
+        metadata=Metadata("segment matrix", "", "", "", "", n_points, ""),
+        points=[KiteGeometry.Point(; name="p$i", pos_ENU=[0, 0, 0]) for i in 1:n_points],
+        segments=[Segment(; name="s$i", points=(segments[i, 1], segments[i, 2]))
+                  for i in axes(segments, 1)])
+end
+
+"""
+    row_kind(segment_type)
+
+How a row of a segment matrix of [`SegmentType`](@ref) value `segment_type` is drawn, as in
+[`segment_kinds`](@ref).
+"""
+function row_kind(segment_type)
+    segment_type == Int(TETHER) && return :tether
+    return segment_type == Int(WING) ? :wing : :bridle
+end
+
+"""
     segment_kinds(definition::SystemDefinition) -> Vector{Symbol}
 
 How each segment of `definition` is drawn: `:tether` for a segment of one of its `tethers`,
@@ -129,9 +183,29 @@ Tether and bridle segments go on the yellow tether layer, wing segments on a bla
 canopy faces on a white surface, and the points on small spheres in place of
 `kv.part_positions`, larger on the tether. A further call replaces the layers of the one
 before.
+
+    init_segments(kv::AKV, segments::AbstractMatrix{<:Integer})
+
+Deprecated, pass a `SystemDefinition`. Draws an `n × 3` matrix
+`(point1, point2, segment_type)`, a [`SegmentType`](@ref) value per row.
 """
 function init_segments(kv::AKV, definition::SystemDefinition)
-    kinds = segment_kinds(definition)
+    return draw_segments!(kv, definition, segment_kinds(definition))
+end
+
+function init_segments(kv::AKV, segments::AbstractMatrix{<:Integer})
+    Base.depwarn("`init_segments` with a segment matrix is deprecated, " *
+                 "pass a `SystemDefinition`.", :init_segments)
+    return draw_segments!(kv, matrix_definition(segments), row_kind.(segments[:, 3]))
+end
+
+"""
+    draw_segments!(kv::AKV, definition, kinds)
+
+Set up the layers of [`init_segments`](@ref), with segment `i` of `definition` drawn as
+`kinds[i]`, one of the kinds of [`segment_kinds`](@ref).
+"""
+function draw_segments!(kv::AKV, definition, kinds)
     n_points = length(definition.points)
     n_wing = count(==(:wing), kinds)
 
@@ -139,6 +213,7 @@ function init_segments(kv::AKV, definition::SystemDefinition)
         isnothing(plot) || delete!(kv.scene3D.scene, plot)
     end
     kv.definition = definition
+    kv.segment_kinds = kinds
     kv.points = Vector{Point3f}(undef, n_points)
     kv.part_positions[] = Point3f[]
     n_drawn = length(kinds) - n_wing
@@ -207,7 +282,7 @@ function update_segments!(kv::AKV, state::SysState; scale=1.0, kite_scale=1.0)
         kv.points[i] = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
     end
 
-    kinds = segment_kinds(definition)
+    kinds = kv.segment_kinds
     tether = segment_points(definition, kinds .== :tether)
     scaled = setdiff(1:n_points, tether)
     if kite_scale != 1 && !isempty(scaled)

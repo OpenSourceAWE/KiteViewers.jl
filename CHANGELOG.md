@@ -1,20 +1,15 @@
 # Changelog
 
 ## Unreleased
-These notes go out as 0.8.0, not as a patch: the `BREAKING:` lines change what a caller on
-`KiteViewers = "0.7"` uses, such as the examples of RobustKiteControllers.
-
 ### Changed
-- BREAKING: `init_segments` takes a KiteGeometry `SystemDefinition` in place of a segment matrix;
-  a segment is drawn as tether, wing or bridle from the definition's tethers, spanwise stations
-  and canopy faces. `load_segments`, `SegmentType`/`TETHER`/`BRIDLE`/`WING` and
-  `data/v3_segments.csv` are gone; `examples/park_v3.jl` draws the V3 kite from the structure
-  document KiteGeometry ships for it.
-- BREAKING: the `Viewer3D` field `seg_topology` is now `definition`.
-- `init_segments` draws the canopy faces of a definition as a white surface.
-- `KiteGeometry` 0.3 is a dependency and is reexported beside `KiteUtils`. A script that also
-  does `using GLMakie` or `using GeometryBasics` writes `KiteGeometry.Point` or `Point3f`, as
-  `Point` is then ambiguous.
+- `init_segments` takes a KiteGeometry `SystemDefinition`; a segment is drawn as tether, wing or
+  bridle from the definition's tethers, spanwise stations and canopy faces, and its canopy faces
+  as a white surface. `examples/park_v3.jl` draws the V3 kite from the structure document
+  KiteGeometry ships for it.
+- A segment matrix passed to `init_segments`, `load_segments` and
+  `SegmentType`/`TETHER`/`BRIDLE`/`WING` keep working and are deprecated.
+- `KiteGeometry` 0.3 is a dependency and is reexported beside `KiteUtils`. `Point` stays
+  GeometryBasics' one; KiteGeometry's is `KiteGeometry.Point`.
 - Each axis of the coordinate system ends in one cone instead of a stack of cylinders, which
   needs `GeometryBasics` 0.5.8.
 - Every sphere the viewer draws has 242 faces instead of 1058.
