@@ -10,7 +10,6 @@ CurrentModule = KiteViewers
 AbstractKiteViewer
 AKV
 Viewer3D
-SegmentType
 ```
 
 ## Functions
@@ -25,16 +24,23 @@ KiteViewers.pause
 KiteViewers.set_status
 KiteViewers.set_title!
 KiteViewers.copy_examples
+KiteViewers.create_coordinate_system
+KiteViewers.axis_arrowhead!
+KiteViewers.sphere_mesh
 ```
 
-## Arbitrary point/segment topologies
+## Drawing a system definition
 
-Used to replay a kite log (e.g. from `SymbolicAWEModels`/`V3Kite`) that does not fit the built-in
-one-point/four-point/three-line kite models — see `examples/park_v3.jl`.
+Draws the points and segments of a `KiteGeometry.SystemDefinition`, for a kite log (e.g. from
+`SymbolicAWEModels`/`V3Kite`) that does not fit the built-in one-point/four-point/three-line kite
+models — see `examples/park_v3.jl`. `KiteGeometry` is reexported, so `load_structure` reads one.
 
 ```@docs
 init_segments
-load_segments
 update_segments!
+KiteViewers.segment_kinds
+KiteViewers.segment_radius
+KiteViewers.segment_points
+KiteViewers.canopy_triangles
 KiteViewers.segment_geometry
 ```
