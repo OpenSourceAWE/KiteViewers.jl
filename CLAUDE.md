@@ -31,8 +31,7 @@ camera helpers `reset_view`/`zoom_scene`/`reset_and_zoom`).
 `KiteUtils` and `KiteGeometry` are `@reexport`ed, as is `GLMakie: on` — callers get `SysState`,
 `se()`, `load_settings`, `demo_state*`, `SystemDefinition`/`load_structure` and the `on(...)` needed
 to hook up buttons without importing anything else. `init_segments`/`update_segments!` draw a
-`SystemDefinition`; a segment's colour and thickness come from `segment_kinds`. The older segment matrix
-(`load_segments`, `SegmentType`) is deprecated and converted to that path by `init_segments`.
+`SystemDefinition`; a segment's colour and thickness come from `segment_kinds`.
 
 ### The pieces that need reading several files to see
 

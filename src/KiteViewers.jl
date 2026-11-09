@@ -18,7 +18,6 @@ export AKV, AbstractKiteViewer, Viewer3D                               # types
 export clear_viewer, pause, save_png, set_status, set_title!, stop     # functions
 export update_system, update_status_text!                              # kite power system and status text
 export init_segments, update_segments!                                 # SystemDefinition
-export SegmentType, TETHER, BRIDLE, WING, load_segments # deprecated segment matrix
 export bring_viewer_to_front, reactivate_host_app
 @reexport using GLMakie: on
 

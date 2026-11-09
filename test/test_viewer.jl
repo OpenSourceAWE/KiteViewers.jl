@@ -244,52 +244,6 @@ end
     @test length(viewer_menus.wing_positions[]) == 1
 end
 
-@testset "the segment table still draws the V3 kite" begin
-    set_title!(viewer_menus, Test.get_testset().description)
-    segments = @test_deprecated load_segments(joinpath(VIEWER_DATA, "v3_segments.csv"))
-    @test size(segments, 2) == 3
-    @test all(t -> t in Int.((TETHER, BRIDLE, WING)), segments[:, 3])
-    n_points = maximum(segments[:, 1:2])
-    n_wing = count(==(Int(WING)), segments[:, 3])
-
-    @test_deprecated init_segments(viewer_menus, segments)
-    @test length(viewer_menus.points) == n_points
-    @test isempty(viewer_menus.part_positions[])
-    @test length(viewer_menus.positions[]) == size(segments, 1) - n_wing
-    @test length(viewer_menus.wing_positions[]) == n_wing
-
-    state = load_log("tmp_parking"; path=VIEWER_DATA, frame=KS).syslog[1]
-    scale = 0.08
-    tether_points = unique(segments[segments[:, 3] .== Int(TETHER), 1:2])
-    unscaled(i) = Point3f(state.X[i], state.Y[i], state.Z[i]) * scale
-    update_segments!(viewer_menus, state; scale)
-    @test all(viewer_menus.points[i] ≈ unscaled(i) for i in 1:n_points)
-    update_segments!(viewer_menus, state; scale, kite_scale=2.0)
-    # the tether is not scaled, the kite is
-    @test all(viewer_menus.points[i] ≈ unscaled(i) for i in tether_points)
-    kite_points = setdiff(1:n_points, tether_points)
-    @test !all(viewer_menus.points[i] ≈ unscaled(i) for i in kite_points)
-    @test viewer_menus.point_positions[] == viewer_menus.points
-    @test all(m -> m[3] >= 0, viewer_menus.wing_markersizes[])
-    @test all(r -> norm(r) ≈ 1, viewer_menus.wing_rotation[])
-end
-
-@testset "a row of the segment table is drawn as the kind it names" begin
-    set_title!(viewer_menus, Test.get_testset().description)
-    # the bridle joins two points of wing segments
-    triangle = [1 2 Int(BRIDLE); 2 3 Int(WING); 3 1 Int(WING)]
-    n_plots = length(viewer_menus.scene3D.scene.plots)
-    @test_deprecated init_segments(viewer_menus, triangle)
-    @test length(viewer_menus.scene3D.scene.plots) == n_plots
-    state = demo_state(3)
-    update_segments!(viewer_menus, state; kite_scale=2.0)
-    points = [Point3f(state.X[i], state.Y[i], state.Z[i]) for i in 1:3]
-    center = sum(points) / 3
-    @test all(viewer_menus.points[i] ≈ center + 2 * (points[i] - center) for i in 1:3)
-    @test length(viewer_menus.positions[]) == 1
-    @test length(viewer_menus.wing_positions[]) == 2
-end
-
 @testset "every KiteGeometry export reaches a caller of KiteViewers" begin
     exported = filter(name -> Base.isexported(KiteGeometry, name), names(KiteGeometry))
     @test filter(name -> !isdefined(KiteViewers, name), exported) == Symbol[]
