@@ -1,5 +1,9 @@
 # Changelog
 
+## Unreleased
+### Changed
+- KiteUtils 0.14 is allowed next to 0.13.
+
 ## KiteViewers v0.7.0 - 2026-10-11
 ### Added
 - function `set_title!(kv::Viewer3D, title)`, setting the title of the viewer window; the tests use
