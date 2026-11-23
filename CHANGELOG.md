@@ -177,8 +177,10 @@
 - upgrade to GLMakie 0.10
 - improve example reelout.jl
 
-## Unreleased
+## KiteViewers v0.7.1 2026-11-23
+
 ### Changed
+
 - the orientation of the one point kite is now converted by default
 - add example `reelout_1p.jl`
 - rename `reelout.jl` to `reelout_4p.jl`
